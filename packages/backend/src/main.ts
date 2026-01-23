@@ -1,8 +1,77 @@
+import { constants } from 'node:zlib';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
+import {
+  DocumentBuilder,
+  OpenAPIObject,
+  SwaggerCustomOptions,
+  SwaggerModule,
+} from '@nestjs/swagger';
+import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
+import fastifyCompress from '@fastify/compress';
+import multipart from '@fastify/multipart';
+
+const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
+  new DocumentBuilder()
+    .setTitle('OpenAPI Documentation')
+    .setDescription(
+      'This document indexes all the available routes, along with their params, queries, payloads and responses.',
+    )
+    .addTag(
+      'Bot',
+      "All the endpoints used to manage the bot's configuration (shards, clusters, ...)",
+    )
+    .addTag(
+      'Clusters',
+      'All the endpoints to manage the clusters themselves (start, stop, restart, ...)',
+    )
+    .setVersion('1.0')
+    .build();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
+
+  await app.register(fastifyCompress, {
+    brotliOptions: { params: { [constants.BROTLI_PARAM_QUALITY]: 1 } },
+  });
+
+  await app.register(multipart);
+
+  const swaggerDocumentationConfig = getSwaggerDocumentConfig();
+  const document = SwaggerModule.createDocument(
+    app,
+    swaggerDocumentationConfig,
+  );
+  const theme = new SwaggerTheme();
+  const swaggerConfig: SwaggerCustomOptions = {
+    explorer: true,
+    customSiteTitle: swaggerDocumentationConfig.info.title,
+    customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
+  };
+  SwaggerModule.setup('/openapi', app, document, swaggerConfig);
+
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
-bootstrap();
+
+bootstrap().catch(console.error);

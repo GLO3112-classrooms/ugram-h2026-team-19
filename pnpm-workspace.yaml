@@ -1,7 +1,11 @@
 packages:
   - packages/*
+
 onlyBuiltDependencies:
   - '@nestjs/core'
+  - '@prisma/engines'
+  - '@scarf/scarf'
   - '@swc/core'
-  - esbuild
   - '@tailwindcss/oxide'
+  - esbuild
+  - prisma
