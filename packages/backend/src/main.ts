@@ -21,6 +21,10 @@ const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
     .setDescription(
       'This document indexes all the available routes, along with their params, queries, payloads and responses.',
     )
+    .addTag(
+      'Authentication',
+      'All the routes related to the authentication process.',
+    )
     .setVersion('1.0')
     .build();
 

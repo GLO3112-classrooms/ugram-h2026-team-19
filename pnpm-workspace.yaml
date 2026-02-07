@@ -7,5 +7,6 @@ onlyBuiltDependencies:
   - '@scarf/scarf'
   - '@swc/core'
   - '@tailwindcss/oxide'
+  - argon2
   - esbuild
   - prisma
