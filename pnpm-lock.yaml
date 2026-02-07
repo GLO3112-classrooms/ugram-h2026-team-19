@@ -6445,7 +6445,7 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 22.19.7
+      '@types/node': 22.19.9
 
   '@types/connect@3.4.38':
     dependencies:
@@ -6697,12 +6697,12 @@ snapshots:
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 22.19.7
+      '@types/node': 22.19.9
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 22.19.7
+      '@types/node': 22.19.9
 
   '@types/stack-utils@2.0.3': {}
 
