@@ -10,9 +10,10 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthRegisterDto } from './dto/register.dto.js';
 import { AuthLoginDto } from './dto/login.dto.js';
-import { CreatedUserDto } from './entity/created-user.dto.js';
+import { CreatedUserDto } from './entities/created-user.dto.js';
 import { JwtService } from '@nestjs/jwt';
-import { UserTokenDto } from './entity/user-token.js';
+import { UserTokenDto } from './entities/user-token.js';
+import { UserTokenDataDto } from './entities/user-token-data.js';
 
 /* https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id */
 const OWASP_CONFIGS = [
@@ -103,5 +104,9 @@ export class AuthService {
       id: user.id,
     });
     return { token };
+  }
+
+  async verifyToken(token: string): Promise<UserTokenDataDto> {
+    return await this.jwtService.verifyAsync<UserTokenDataDto>(token);
   }
 }
