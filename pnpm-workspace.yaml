@@ -1,5 +1,11 @@
 packages:
-  - 'packages/*'
+  - packages/*
+
 onlyBuiltDependencies:
-  - esbuild
+  - '@nestjs/core'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - '@swc/core'
   - '@tailwindcss/oxide'
+  - esbuild
+  - prisma
