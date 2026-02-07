@@ -25,7 +25,16 @@ const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
       'Authentication',
       'All the routes related to the authentication process.',
     )
+    .addTag('Users', 'All the routes related to the users queries.')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        description: "A JWT returned by the 'login' auth endpoint.",
+        name: 'bearer',
+      },
+      'jwt',
+    )
     .build();
 
 async function bootstrap() {
