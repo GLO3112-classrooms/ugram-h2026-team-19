@@ -17,17 +17,9 @@ import fastifyCompress from '@fastify/compress';
 
 const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
   new DocumentBuilder()
-    .setTitle('OpenAPI Documentation')
+    .setTitle('Ugram API Documentation')
     .setDescription(
       'This document indexes all the available routes, along with their params, queries, payloads and responses.',
-    )
-    .addTag(
-      'Bot',
-      "All the endpoints used to manage the bot's configuration (shards, clusters, ...)",
-    )
-    .addTag(
-      'Clusters',
-      'All the endpoints to manage the clusters themselves (start, stop, restart, ...)',
     )
     .setVersion('1.0')
     .build();

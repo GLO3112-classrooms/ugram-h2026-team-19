@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16.8-alpine3.20
+    container_name: ugram-postgres
+    shm_size: 128mb
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ugram-database:/var/lib/postgresql/data:rw
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - ugram-network
+
+networks:
+  ugram-network:
+
+volumes:
+  ugram-database:

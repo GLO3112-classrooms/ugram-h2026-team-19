@@ -14,7 +14,6 @@ import { PrismaService } from './prisma.service.js';
         return new PrismaService(datasourceUrl);
       },
     },
-    PrismaService,
   ],
   exports: [PrismaService],
 })
