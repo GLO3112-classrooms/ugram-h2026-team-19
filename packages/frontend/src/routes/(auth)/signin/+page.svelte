@@ -17,8 +17,8 @@
 		<div class="flex flex-col gap-6">
 			<Card.Root>
 				<Header
-					title="Log in to your account"
-					description="Fill in the form below to log in to your account"
+					title="Welcome back"
+					description="Login with your account"
 				/>
 				<Card.Content>
 					<form {...signIn}>

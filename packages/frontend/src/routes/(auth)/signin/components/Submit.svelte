@@ -5,8 +5,8 @@
 </script>
 
 <Field.Field>
-	<Button type="submit">Log In</Button>
+	<Button type="submit">Login</Button>
 	<Field.Description class="text-center">
-		Not already registered? <a href={resolve("/signup")}>Sign up</a>
+		Don't have an account? <a href={resolve("/signup")}>Sign up</a>
 	</Field.Description>
 </Field.Field>
