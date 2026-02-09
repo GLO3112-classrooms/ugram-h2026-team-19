@@ -200,6 +200,9 @@ importers:
       '@types/node':
         specifier: ^22
         version: 22.19.7
+      backend:
+        specifier: workspace:*
+        version: link:../backend
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -251,16 +254,6 @@ importers:
       vite:
         specifier: ^7.2.6
         version: 7.3.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)
-
-  packages/shared:
-    dependencies:
-      zod:
-        specifier: ^4.3.6
-        version: 4.3.6
-    devDependencies:
-      '@types/node':
-        specifier: ^22.19.8
-        version: 22.19.9
 
 packages:
 
