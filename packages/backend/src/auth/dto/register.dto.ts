@@ -1,4 +1,4 @@
 import { createZodDto } from 'nestjs-zod';
-import { authRegisterSchema } from '../../../../shared/src/auth/index.js';
+import { authRegisterSchema } from '../schemas/auth-register.schema.js';
 
 export class AuthRegisterDto extends createZodDto(authRegisterSchema) {}
