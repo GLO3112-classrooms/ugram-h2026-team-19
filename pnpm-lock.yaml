@@ -200,6 +200,9 @@ importers:
       '@types/node':
         specifier: ^22
         version: 22.19.7
+      backend:
+        specifier: workspace:*
+        version: link:../backend
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
