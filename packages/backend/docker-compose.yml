@@ -5,13 +5,30 @@ services:
     shm_size: 128mb
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.prod
     volumes:
       - ugram-database:/var/lib/postgresql/data:rw
     ports:
       - "127.0.0.1:5432:5432"
     networks:
       - ugram-network
+
+  backend:
+    depends_on:
+      - postgres
+    image: ugram-backend
+    build:
+      context: ../../
+      dockerfile: ./packages/backend/Dockerfile
+    container_name: ugram-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.prod
+
+    networks:
+      - ugram-network
+    restart: unless-stopped
 
 networks:
   ugram-network:
