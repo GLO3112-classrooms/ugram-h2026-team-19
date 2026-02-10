@@ -6,7 +6,7 @@
 	import Logo from "../components/Logo.svelte";
 	import Password from "./components/Password.svelte";
 	import Submit from "./components/Submit.svelte";
-	import Username from "./components/Username.svelte";
+	import Email from "./components/Email.svelte";
 
 	import { signIn } from "$lib/remotes/auth.remote";
 </script>
@@ -16,14 +16,11 @@
 		<Logo />
 		<div class="flex flex-col gap-6">
 			<Card.Root>
-				<Header
-					title="Welcome back"
-					description="Login with your account"
-				/>
+				<Header title="Welcome back" description="Login with your account" />
 				<Card.Content>
 					<form {...signIn}>
 						<Field.Group>
-							<Username />
+							<Email />
 							<Password />
 							<Submit />
 						</Field.Group>

@@ -5,9 +5,9 @@
 </script>
 
 <Field.Field>
-	<Field.Label for="password">Password</Field.Label>
-	<Input {...signIn.fields.password.as("password")} id="password" required />
-	{#each signIn.fields.password.issues() as issue, index (index)}
+	<Field.Label for="email">Email</Field.Label>
+	<Input {...signIn.fields.email.as("email")} id="email" placeholder="m@example.com" required />
+	{#each signIn.fields.email.issues() as issue, index (index)}
 		<Field.Error>{issue.message}</Field.Error>
 	{/each}
 </Field.Field>
