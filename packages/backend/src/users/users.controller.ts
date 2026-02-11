@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
@@ -36,5 +36,16 @@ export class UsersController {
     const token = request['user'] as UserTokenDataDto;
 
     return await this.usersService.retrieveMe(token);
+  }
+
+  @Post('me/avatar')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    description: 'The user profile picture has been uploaded.',
+  })
+  async uploadAvatar(@Req() request: FastifyRequest) {
+    const token = request['user'] as UserTokenDataDto;
+
+    return await this.usersService.uploadAvatar(token);
   }
 }

@@ -4,6 +4,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import multipart from '@fastify/multipart';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import {
@@ -53,6 +54,8 @@ async function bootstrap() {
   await app.register(fastifyCompress, {
     brotliOptions: { params: { [constants.BROTLI_PARAM_QUALITY]: 1 } },
   });
+
+  await app.register(multipart);
 
   const swaggerDocumentationConfig = getSwaggerDocumentConfig();
   const document = SwaggerModule.createDocument(
