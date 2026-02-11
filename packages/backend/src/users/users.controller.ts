@@ -1,6 +1,16 @@
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import {
+  BadRequestException,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
@@ -11,6 +21,8 @@ import { UsersService } from './users.service.js';
 import { UserDataDto } from './entities/user-data.js';
 import { AuthGuard } from '../auth/guards/jwt.guard.js';
 import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
+import { userAvatarUploadSchema } from './schemas/user-avatar-upload.schema.js';
+import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
 
 @Controller('users')
 @ApiTags('Users')
@@ -21,6 +33,10 @@ import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
 })
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  private static getOrigin(request: FastifyRequest): string {
+    return `${request.protocol}://${request.headers.host}`;
+  }
 
   @Get('/me')
   @UseGuards(AuthGuard)
@@ -40,12 +56,40 @@ export class UsersController {
 
   @Post('me/avatar')
   @UseGuards(AuthGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    // type: UserAvatarUploadDto,
+    schema: {
+      type: 'object',
+      properties: {
+        avatar: {
+          type: 'string',
+          format: 'binary',
+          description:
+            userAvatarUploadSchema.shape.avatar.description ??
+            "The binary file representing the user's new avatar.",
+        },
+      },
+      required: ['avatar'],
+    },
+  })
   @ApiOkResponse({
+    type: UserAvatarUploadResponseDto,
     description: 'The user profile picture has been uploaded.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The request body is malformed.',
   })
   async uploadAvatar(@Req() request: FastifyRequest) {
     const token = request['user'] as UserTokenDataDto;
 
-    return await this.usersService.uploadAvatar(token);
+    const file = await request.file();
+
+    if (undefined === file) {
+      throw new BadRequestException();
+    }
+
+    const origin = UsersController.getOrigin(request);
+    return await this.usersService.uploadAvatar(token, file, origin);
   }
 }

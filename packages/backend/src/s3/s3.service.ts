@@ -14,8 +14,9 @@ import {
   BucketAlreadyOwnedByYou,
   NotFound,
   NoSuchBucket,
+  NoSuchKey,
 } from '@aws-sdk/client-s3';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class S3Service {
@@ -217,28 +218,41 @@ export class S3Service {
     stream: Readable;
     parent: string;
     filename: string;
+    contentType: string;
     metadata?: Record<string, string>;
   }> {
     const [bucket, ...keyFragments] = parent.split(/\//g);
 
     const key = path.join(...keyFragments, filename);
 
-    const result = await this.client.send(
-      new GetObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      }),
-    );
+    try {
+      const result = await this.client.send(
+        new GetObjectCommand({
+          Bucket: bucket,
+          Key: key,
+        }),
+      );
 
-    if (undefined === result.Body)
-      throw new Error(`Unable to find the document. (loc: ${bucket}/${key})`);
+      if (undefined === result.Body)
+        throw new NotFoundException(
+          `Unable to find the document. (loc: ${bucket}/${key})`,
+        );
 
-    return {
-      stream: result.Body as Readable,
-      parent,
-      filename,
-      metadata: result.Metadata,
-    };
+      return {
+        stream: result.Body as Readable,
+        parent,
+        filename,
+        contentType: result.ContentType ?? 'application/octet-stream',
+        metadata: result.Metadata,
+      };
+    } catch (e) {
+      if (e instanceof NoSuchKey || e instanceof NotFound) {
+        throw new NotFoundException(
+          `Unable to find the document. (loc: ${bucket}/${key})`,
+        );
+      }
+      throw e;
+    }
   }
 
   async exists(parent: string, filename: string): Promise<boolean> {
