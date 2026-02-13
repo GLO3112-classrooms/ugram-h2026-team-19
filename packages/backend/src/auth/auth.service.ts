@@ -58,6 +58,7 @@ export class AuthService {
         },
         data: {
           email: dto.email,
+          username: dto.username,
           hashedPassword: hashedPassword,
           firstname: dto.firstname,
           lastname: dto.lastname,
