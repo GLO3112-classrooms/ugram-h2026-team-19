@@ -5,6 +5,9 @@ export const userDataSchema = z.object({
   email: z.email().meta({
     description: 'The user email',
   }),
+  username: z.string().meta({
+    description: 'The user username',
+  }),
   firstname: z.string().meta({
     description: 'The user firstname',
   }),
