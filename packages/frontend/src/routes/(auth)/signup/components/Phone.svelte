@@ -6,5 +6,5 @@
 
 <Field.Field>
 	<Field.Label for="phone">Phone</Field.Label>
-	<Input {...signUp.fields.phone.as("tel")} id="phone" placeholder="(123) 456-7890" required />
+	<Input {...signUp.fields.phoneNumber.as("tel")} id="phone" placeholder="(123) 456-7890" required />
 </Field.Field>
