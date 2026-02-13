@@ -1,22 +1,23 @@
 generator client {
-    provider     = "prisma-client"
-    output       = "../src/prisma/generated"
-    moduleFormat = "esm"
+  provider     = "prisma-client"
+  output       = "../src/prisma/generated"
+  moduleFormat = "esm"
 }
 
 datasource db {
-    provider = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
-    id String @id @default(uuid())
-    email String @unique
-    hashedPassword String @map("hashed_password")
-    firstname String
-    lastname String
-    phoneNumber String @map("phone_number")
-    profilePicture String @map("profile_picture")
-    createdAt DateTime @map("created_at") @default(now())
+  id             String   @id @default(uuid())
+  email          String   @unique
+  username       String   @unique
+  hashedPassword String   @map("hashed_password")
+  firstname      String
+  lastname       String
+  phoneNumber    String   @map("phone_number")
+  profilePicture String   @map("profile_picture")
+  createdAt      DateTime @default(now()) @map("created_at")
 
-    @@map("user")
+  @@map("user")
 }

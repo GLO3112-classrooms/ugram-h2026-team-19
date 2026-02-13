@@ -28,6 +28,7 @@ export class AuthController {
     description: 'The created user info',
   })
   @ApiConflictResponse({ description: 'The email is already taken' })
+  @ApiConflictResponse({ description: 'The username is already taken' })
   async register(@Body() body: AuthRegisterDto): Promise<CreatedUserDto> {
     return await this.authService.register(body);
   }
