@@ -248,4 +248,33 @@ export class PostsService {
 
     return { imageUrl: staticImageUrl };
   }
+
+  async delete(token: UserTokenData, id: UUID): Promise<void> {
+    const postAuthor = await this.prismaService.post.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        user: {
+          select: { id: true },
+        },
+      },
+    });
+    if (null === postAuthor) {
+      throw new NotFoundException();
+    }
+
+    if (token.id !== postAuthor.user.id) {
+      throw new ForbiddenException();
+    }
+
+    await this.prismaService.post.delete({
+      where: {
+        id: id,
+        user: {
+          id: token.id,
+        },
+      },
+    });
+  }
 }

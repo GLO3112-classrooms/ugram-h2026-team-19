@@ -2,7 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -18,6 +21,7 @@ import {
   ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiParam,
@@ -92,6 +96,7 @@ export class PostsController {
 
   @Post()
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
   @ApiBody({
     type: PostCreateDto,
     description: 'The payload to create a new post.',
@@ -114,6 +119,7 @@ export class PostsController {
 
   @Post(':id/image')
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'id',
@@ -135,7 +141,7 @@ export class PostsController {
       required: ['image'],
     },
   })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     type: PostImageUploadResponseDto,
     description: 'The post image has been uploaded.',
   })
@@ -159,5 +165,28 @@ export class PostsController {
 
     const origin = PostsController.getOrigin(request);
     return await this.postsService.uploadImage(token, id, file, origin);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the post to delete.',
+  })
+  @ApiNoContentResponse({
+    description: 'The post was deleted successfully.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The given post ID resolves no post.',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'The authenticated user does not have the permission to update this post.',
+  })
+  async delete(@Req() req: FastifyRequest, @Param('id') id: UUID) {
+    const token = req['user'] as UserTokenData;
+
+    return await this.postsService.delete(token, id);
   }
 }
