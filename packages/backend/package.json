@@ -23,7 +23,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:reset": "dotenv -e .env.dev -- prisma migrate reset",
     "prisma:migrate": "dotenv -e .env.dev -- prisma migrate dev",
-    "prisma:generate": "dotenv -e .env.dev -- prisma generate",
+    "prisma:generate": "DATABASE_URL=postgres://null:null@null:5432/null prisma generate",
     "prisma:deploy": "dotenv -e .env.dev -- prisma migrate deploy",
     "prisma:studio": "dotenv -e .env.dev -- prisma studio"
   },
