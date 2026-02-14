@@ -24,7 +24,7 @@ export const signUp = form(authRegisterSchema, async (data, issue) => {
   }
 });
 
-export const signIn = form(authLoginSchema, async (data) => {
+export const signIn = form(authLoginSchema, async (data, issue) => {
   const response = await fetch(API_URL + "/auth/login", {
     method: "POST",
     headers: {
@@ -39,8 +39,11 @@ export const signIn = form(authLoginSchema, async (data) => {
       cookies.set("token", (await response.json()).token, { path: "/" });
       return redirect(303, "/");
     }
-    case 400:
-      return invalid(...(await response.json()).errors);
+    case 401:
+      return invalid(
+        issue.email("Invalid email or password"),
+        issue.password("Invalid email or password")
+      );
     default:
       return error(500, "Something went wrong");
   }
