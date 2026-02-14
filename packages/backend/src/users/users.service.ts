@@ -4,7 +4,6 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  Query,
 } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
 import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
