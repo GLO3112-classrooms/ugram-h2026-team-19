@@ -1,12 +1,12 @@
 // TODO: Replace placeholder data with actual data from the backend when the API is ready
 
-import type { PageLoad } from "./$types";
+import { query } from "$app/server";
 
-function getRandomArbitrary(min = 500, max = 1000) {
+function getRandomArbitrary(min = 100, max = 1000) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
-export const load: PageLoad = () => {
+export const getPost = query(async () => {
   return {
     id: Math.random().toString(36).substring(2, 15),
     user: {
@@ -22,4 +22,4 @@ export const load: PageLoad = () => {
     mention: "anakamura",
     date: "2025-07-01T12:00:00Z"
   };
-};
+});

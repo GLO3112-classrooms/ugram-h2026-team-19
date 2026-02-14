@@ -1,28 +1,30 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { Separator } from "$lib/components/ui/separator";
-  import type { PageProps } from "./$types";
+  import { getUser } from "$lib/remotes/user.remote";
   import Avatar from "../components/Avatar.svelte";
 
-  let { data }: PageProps = $props();
+  let { params } = $props();
+
+  const user = $derived(await getUser(params.username));
 </script>
 
 <div class="mx-auto max-w-5xl p-7">
   <div class="flex h-20 items-center gap-2 pl-2">
-    <Avatar src={data.profilePicture} username={data.username} />
+    <Avatar src={user.profilePicture} username={user.username} />
     <div>
-      <p class="text-xs">@{data.username}</p>
-      <p>{data.firstname} {data.lastname}</p>
+      <p class="text-xs">@{user.username}</p>
+      <p>{user.firstname} {user.lastname}</p>
     </div>
   </div>
   <Separator class="my-5" />
   <div class="grid grid-cols-3 gap-1 pt-2">
-    {#each data.posts as post (post.id)}
+    {#each user.posts as post (post.id)}
       <a href={resolve(`/p/${post.id}`)}>
         <img
-          class="aspect-square size-full rounded-sm object-cover hover:grayscale"
+          class="aspect-square size-full rounded-sm object-cover bg-muted hover:grayscale"
           src={post.url}
-          alt="Random"
+          alt=""
         />
       </a>
     {/each}

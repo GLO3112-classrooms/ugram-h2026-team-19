@@ -1,6 +1,7 @@
 // TODO: Replace placeholder data with actual data from the backend when the API is ready
 
-import type { PageLoad } from "./$types";
+import { z } from "zod";
+import { query } from "$app/server";
 
 function getRandomArbitrary(min = 100, max = 1000) {
   return Math.floor(Math.random() * (max - min) + min);
@@ -13,9 +14,9 @@ function picture() {
   };
 }
 
-export const load: PageLoad = ({ params }) => {
+export const getUser = query(z.string(), async (username) => {
   return {
-    username: params.username,
+    username: username,
     firstname: "John",
     lastname: "Doe",
     profilePicture:
@@ -33,4 +34,4 @@ export const load: PageLoad = ({ params }) => {
       picture()
     ]
   };
-};
+});
