@@ -53,11 +53,6 @@ export class UsersController {
     description: 'The users were found and their attributes are returned.',
     type: UserDataListDto,
   })
-  @ApiQuery({
-    description:
-      'The query parameters to filter on. All parameters are optionnal.',
-    type: UserDataListQueryDto,
-  })
   async retrieveAll(
     @Query() query: UserDataListQueryDto,
   ): Promise<UserDataListDto> {
