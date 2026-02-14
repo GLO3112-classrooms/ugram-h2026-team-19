@@ -33,9 +33,9 @@ import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { type UUID } from 'node:crypto';
 import { UserTokenData } from 'src/index.schema.js';
 import { PostDataDto } from './entities/post-data.js';
-import { type GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
+import { GetPostsQueryDto } from './entities/get-posts-list.js';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -75,7 +75,7 @@ export class PostsController {
   })
   async listUserPosts(
     @Param('userId') userId: UUID,
-    @Query() query: GetPostsQuery,
+    @Query() query: GetPostsQueryDto,
   ): Promise<PostDataList> {
     return await this.postsService.listUserPosts(userId, query);
   }
@@ -86,7 +86,7 @@ export class PostsController {
     type: PostDataListDto,
     description: 'The list of posts corresponding to the current page.',
   })
-  async list(@Query() query: GetPostsQuery): Promise<PostDataList> {
+  async list(@Query() query: GetPostsQueryDto): Promise<PostDataList> {
     return await this.postsService.list(query);
   }
 
