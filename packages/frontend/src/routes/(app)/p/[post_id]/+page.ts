@@ -8,6 +8,7 @@ function getRandomArbitrary(min = 500, max = 1000) {
 
 export const load: PageLoad = () => {
   return {
+    id: Math.random().toString(36).substring(2, 15),
     user: {
       username: "rastley",
       firstname: "John",
