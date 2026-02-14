@@ -18,7 +18,7 @@ export const userDataSchema = z.object({
     description: 'The user phone number',
   }),
   profilePicture: z.string().meta({
-    description: 'The user profile picture URL',
+    description: 'The user profile picture URL (empty string if none)',
   }),
   createdAt: z.iso.datetime().meta({
     description: 'The user creation datetime (ISO format)',

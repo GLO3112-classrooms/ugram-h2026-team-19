@@ -25,11 +25,11 @@ model User {
 model Post {
   user User @relation(references: id, fields: [id], onDelete: Cascade, onUpdate: Cascade)
   id String @id @default(uuid())
-  image String
   description String
   /// Also known as 'hashtags'
   keywords String[] @default([])
   mentions String[] @default([])
-
+  image String @default("")
+  createdAt DateTime @default(now()) @map("created_at")
   @@map("post")
 }
