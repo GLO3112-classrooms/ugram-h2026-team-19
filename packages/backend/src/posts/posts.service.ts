@@ -19,6 +19,8 @@ import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { PostCreateDto } from './dto/create-post.dto.js';
 import { CreatedPostDto } from './entities/created-post.js';
 import { UserTokenData } from 'src/index.schema.js';
+import { GetMyPostsQuery } from './schemas/get-my-posts.schema.js';
+import { PostDataList } from './schemas/post-data-list.schema.js';
 
 @Injectable()
 export class PostsService {
@@ -65,6 +67,104 @@ export class PostsService {
         username: post.user.username,
         profilePicture: post.user.profilePicture,
       },
+    };
+  }
+
+  async list(query: GetMyPostsQuery): Promise<PostDataList> {
+    const posts = await this.prismaService.post.findMany({
+      select: {
+        id: true,
+        description: true,
+        keywords: true,
+        mentions: true,
+        image: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profilePicture: true,
+          },
+        },
+      },
+      skip: query.skip,
+      take: query.limit,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const total = await this.prismaService.post.count();
+
+    return {
+      posts: posts.map((p) => ({
+        id: p.id,
+        description: p.description,
+        keywords: p.keywords,
+        mentions: p.mentions,
+        image: p.image,
+        createdAt: p.createdAt.toISOString(),
+        user: {
+          id: p.user.id,
+          username: p.user.username,
+          profilePicture: p.user.profilePicture,
+        },
+      })),
+      total: total,
+    };
+  }
+
+  async listMy(
+    token: UserTokenData,
+    query: GetMyPostsQuery,
+  ): Promise<PostDataList> {
+    const posts = await this.prismaService.post.findMany({
+      where: {
+        user: {
+          id: token.id,
+        },
+      },
+      select: {
+        id: true,
+        description: true,
+        keywords: true,
+        mentions: true,
+        image: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profilePicture: true,
+          },
+        },
+      },
+      skip: query.skip,
+      take: query.limit,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const total = await this.prismaService.post.count({
+      where: {
+        user: {
+          id: token.id,
+        },
+      },
+    });
+
+    return {
+      posts: posts.map((p) => ({
+        id: p.id,
+        description: p.description,
+        keywords: p.keywords,
+        mentions: p.mentions,
+        image: p.image,
+        createdAt: p.createdAt.toISOString(),
+        user: {
+          id: p.user.id,
+          username: p.user.username,
+          profilePicture: p.user.profilePicture,
+        },
+      })),
+      total: total,
     };
   }
 
