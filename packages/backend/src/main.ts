@@ -27,6 +27,8 @@ const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
       'All the routes related to the authentication process.',
     )
     .addTag('Users', 'All the routes related to the users queries.')
+    .addTag('Posts', 'All the routes related to the posts.')
+    .addTag('Static', 'All the routes related to the static files.')
     .setVersion('1.0')
     .addBearerAuth(
       {
