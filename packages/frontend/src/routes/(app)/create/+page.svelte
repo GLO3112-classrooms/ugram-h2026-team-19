@@ -19,7 +19,7 @@
       <Card.Root>
         <Header title="Create a post" description="Fill in the form below to create a post" />
         <Card.Content>
-          <form {...createPost}>
+          <form {...createPost} enctype="multipart/form-data">
             <Field.Group>
               <Image />
               <Description />

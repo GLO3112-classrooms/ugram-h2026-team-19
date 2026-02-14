@@ -6,5 +6,5 @@
 
 <div class="grid w-full gap-1.5">
   <Label for="description">Description</Label>
-  <Textarea {...createPost.fields.description.as("text")} id="description" />
+  <Textarea {...createPost.fields.description.as("text")} id="description" required />
 </div>

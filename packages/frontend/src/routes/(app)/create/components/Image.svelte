@@ -3,14 +3,14 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { createPost } from "$lib/remotes/post.remote";
 
-  let file = $derived(createPost.fields.picture.value());
-  let picture = $derived(file ? URL.createObjectURL(file) : "");
+  let file = $derived(createPost.fields.image.value());
+  let image = $derived(file ? URL.createObjectURL(file) : "");
 </script>
 
 <div class="grid w-full max-w-sm items-center gap-1.5">
-  <Label for="picture">Picture</Label>
-  <Input {...createPost.fields.picture.as("file")} id="picture" accept="image/*" required />
-  {#if picture}
-    <img class="max-h-64 w-full rounded-sm object-cover" src={picture} alt="" />
+  <Label for="image">Image</Label>
+  <Input {...createPost.fields.image.as("file")} id="image" accept="image/*" required />
+  {#if image}
+    <img class="max-h-64 w-full rounded-sm object-cover" src={image} alt="" />
   {/if}
 </div>

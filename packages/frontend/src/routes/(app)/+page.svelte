@@ -10,8 +10,8 @@
       picture={post.picture}
       description={post.description}
       keywords={post.keywords}
-      mention={post.mention}
-      date={post.date}
+      mentions={post.mentions}
+      date={post.createdAt}
     />
   {/each}
 </div>

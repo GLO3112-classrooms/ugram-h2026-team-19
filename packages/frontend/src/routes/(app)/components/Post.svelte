@@ -10,11 +10,11 @@
     picture: string;
     description: string;
     keywords: string[];
-    mention: string;
+    mentions: string;
     date: string;
   }
 
-  let { user, picture, description, keywords, mention, date }: Props = $props();
+  let { user, picture, description, keywords, mentions, date }: Props = $props();
 </script>
 
 <div class="space-y-1">
@@ -33,5 +33,7 @@
       <span class="text-sm text-cyan-600">#{keyword}</span>
     {/each}
   </p>
-  <a class="text-cyan-600" href={resolve(`/user/${mention}`)}>@{mention}</a>
+  {#each mentions as mention (mention)}
+    <a class="text-cyan-600" href={resolve(`/user/${mention}`)}>@{mention}</a>
+  {/each}
 </div>
