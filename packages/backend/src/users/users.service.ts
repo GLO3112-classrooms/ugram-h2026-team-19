@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
 import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
@@ -14,9 +15,13 @@ import {
   USER_AVATAR_UPLOAD_MAX_SIZE,
   USER_AVATAR_UPLOAD_MIME_TYPES,
 } from './schemas/user-avatar-upload.schema.js';
+
 import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
 import { UserUpdateDataDto } from './entities/user-update-data.js';
-import { UserPartialDataDto } from './entities/user-partial-data.js';
+import {
+  UserDataListDto,
+  UserDataListQueryDto,
+} from './entities/user-data-list.js';
 
 @Injectable()
 export class UsersService {
@@ -25,7 +30,10 @@ export class UsersService {
     private readonly s3Service: S3Service,
   ) {}
 
-  async retrieveAll(): Promise<UserPartialDataDto[]> {
+  async retrieveAll(
+    @Query() query: UserDataListQueryDto,
+  ): Promise<UserDataListDto> {
+    // Get users with pagination and optional search on username
     const users = await this.prismaService.user.findMany({
       select: {
         id: true,
@@ -34,14 +42,27 @@ export class UsersService {
         lastname: true,
         profilePicture: true,
       },
+      where: {
+        username: query.search ? { contains: query.search } : undefined,
+      },
+      skip: query.skip,
+      take: query.limit,
     });
-    return users.map((user) => ({
-      id: user.id,
-      username: user.username,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      profilePicture: user.profilePicture,
-    }));
+
+    return {
+      users: users.map((user) => ({
+        id: user.id,
+        username: user.username,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        profilePicture: user.profilePicture,
+      })),
+      total: await this.prismaService.user.count({
+        where: {
+          username: query.search ? { contains: query.search } : undefined,
+        },
+      }),
+    };
   }
 
   async retrieveMe(token: UserTokenDataDto): Promise<UserDataDto> {
@@ -80,12 +101,13 @@ export class UsersService {
     data: UserUpdateDataDto,
   ): Promise<UserDataDto> {
     //Verify that at least one field is being updated
-    if (Object.keys(data).length === 0 || (
-      null === data.email &&
-      null === data.firstname &&
-      null === data.lastname &&
-      null === data.phoneNumber
-    )) {
+    if (
+      Object.keys(data).length === 0 ||
+      (null === data.email &&
+        null === data.firstname &&
+        null === data.lastname &&
+        null === data.phoneNumber)
+    ) {
       throw new BadRequestException('At least one field is expected');
     }
 

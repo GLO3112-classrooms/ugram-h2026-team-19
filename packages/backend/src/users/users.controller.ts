@@ -5,6 +5,7 @@ import {
   Get,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import {
   ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -26,7 +28,10 @@ import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
 import { userAvatarUploadSchema } from './schemas/user-avatar-upload.schema.js';
 import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
 import { UserUpdateDataDto } from './entities/user-update-data.js';
-import { UserPartialDataDto } from './entities/user-partial-data.js';
+import {
+  UserDataListDto,
+  UserDataListQueryDto,
+} from './entities/user-data-list.js';
 
 @Controller('users')
 @ApiTags('Users')
@@ -46,10 +51,17 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: 'The users were found and their attributes are returned.',
-    type: [UserPartialDataDto],
+    type: UserDataListDto,
   })
-  async retrieveAll(): Promise<UserPartialDataDto[]> {
-    return await this.usersService.retrieveAll();
+  @ApiQuery({
+    description:
+      'The query parameters to filter on. All parameters are optionnal.',
+    type: UserDataListQueryDto,
+  })
+  async retrieveAll(
+    @Query() query: UserDataListQueryDto,
+  ): Promise<UserDataListDto> {
+    return await this.usersService.retrieveAll(query);
   }
 
   @Get('/me')
