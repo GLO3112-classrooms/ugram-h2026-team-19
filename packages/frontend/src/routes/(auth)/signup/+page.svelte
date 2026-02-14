@@ -10,8 +10,8 @@
   import Username from "./components/Username.svelte";
 
   import { signUp } from "$lib/remotes/auth.remote";
-  import Header from "../components/Header.svelte";
-  import Logo from "../components/Logo.svelte";
+  import Header from "../../(app)/components/Header.svelte";
+  import Logo from "../../(app)/components/Logo.svelte";
 </script>
 
 <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
