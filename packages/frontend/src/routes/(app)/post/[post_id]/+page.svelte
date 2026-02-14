@@ -10,7 +10,7 @@
     user={post.user}
     picture={post.picture}
     description={post.description}
-    tags={post.tags}
+    keywords={post.keywords}
     mention={post.mention}
     date={post.date}
   />

@@ -7,7 +7,7 @@
   import Header from "../components/Header.svelte";
   import Image from "./components/Image.svelte";
   import Description from "./components/Description.svelte";
-  import Tags from "./components/Tags.svelte";
+  import Keywords from "./components/Keywords.svelte";
   import Mention from "./components/Mention.svelte";
   import Submit from "./components/Submit.svelte";
 </script>
@@ -23,7 +23,7 @@
             <Field.Group>
               <Image />
               <Description />
-              <Tags />
+              <Keywords />
               <Mention />
               <Submit />
             </Field.Group>

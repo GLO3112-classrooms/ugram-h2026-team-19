@@ -9,12 +9,12 @@
     };
     picture: string;
     description: string;
-    tags: string[];
+    keywords: string[];
     mention: string;
     date: string;
   }
 
-  let { user, picture, description, tags, mention, date }: Props = $props();
+  let { user, picture, description, keywords, mention, date }: Props = $props();
 </script>
 
 <div class="space-y-1">
@@ -29,8 +29,8 @@
   <img class="w-full rounded-sm" src={picture} alt="" />
   <p>{description}</p>
   <p class="flex flex-wrap space-x-1">
-    {#each tags as tag (tag)}
-      <span class="text-sm text-cyan-600">#{tag}</span>
+    {#each keywords as keyword (keyword)}
+      <span class="text-sm text-cyan-600">#{keyword}</span>
     {/each}
   </p>
   <a class="text-cyan-600" href={resolve(`/user/${mention}`)}>@{mention}</a>

@@ -7,7 +7,7 @@ function getRandomArbitrary(min = 100, max = 1000) {
 }
 
 export const createPost = form("unchecked", (data) => {
-  // data.tags = (data.tags ?? "")
+  // data.keywords = (data.keywords ?? "")
   //   .replace(/[^\d\w-_]+/g, " ")
   //   .trim()
   //   .split(" ");
@@ -25,7 +25,7 @@ export const getPost = query(async () => {
     },
     picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-    tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
+    keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
     mention: "anakamura",
     date: "2025-07-01T12:00:00Z"
   };
@@ -44,7 +44,7 @@ export const getPosts = query(async () => {
       },
       picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
       description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-      tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
+      keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
       mention: "anakamura",
       date: "2025-07-01T12:00:00Z"
     },
@@ -59,7 +59,7 @@ export const getPosts = query(async () => {
       },
       picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
       description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-      tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
+      keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
       mention: "rastley",
       date: "2025-06-30T12:00:00Z"
     },
@@ -73,7 +73,7 @@ export const getPosts = query(async () => {
       },
       picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
       description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-      tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
+      keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
       mention: "rastley",
       date: "2025-06-29T12:00:00Z"
     }

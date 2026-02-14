@@ -6,8 +6,8 @@
 </script>
 
 <div class="grid w-full gap-1.5">
-  <Label for="tags">Tags</Label>
-  <Textarea {...createPost.fields.tags.as("text")} id="tags" />
+  <Label for="keywords">Keywords</Label>
+  <Textarea {...createPost.fields.keywords.as("text")} id="keywords" />
   <p class="text-xs text-muted-foreground">
     All non-alphanumeric characters will be considered as separators, except for the dash (<Code
       >-</Code
