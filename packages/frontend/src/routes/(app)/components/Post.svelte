@@ -19,7 +19,7 @@
 
 <div class="space-y-1">
   <div class="flex items-center justify-between">
-    <a class="flex h-10 items-center gap-2" href={resolve(`/${user.username}`)}>
+    <a class="flex h-10 items-center gap-2" href={resolve(`/user/${user.username}`)}>
       <Avatar src={user.profilePicture} username={user.username} />
       <p>@{user.username}</p>
     </a>
@@ -33,5 +33,5 @@
       <span class="text-sm text-cyan-600">#{tag}</span>
     {/each}
   </p>
-  <a class="text-cyan-600" href={resolve(`/${mention}`)}>@{mention}</a>
+  <a class="text-cyan-600" href={resolve(`/user/${mention}`)}>@{mention}</a>
 </div>
