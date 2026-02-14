@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AtSignIcon } from '@lucide/svelte';
+  import { AtSignIcon } from "@lucide/svelte";
   import * as Field from "$lib/components/ui/field/index.js";
   import * as InputGroup from "$lib/components/ui/input-group";
   import { createPost } from "$lib/remotes/post.remote";
