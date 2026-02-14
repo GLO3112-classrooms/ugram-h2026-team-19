@@ -10,7 +10,7 @@
     picture: string;
     description: string;
     keywords: string[];
-    mentions: string;
+    mentions: string[];
     date: string;
   }
 
