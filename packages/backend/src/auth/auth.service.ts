@@ -3,14 +3,14 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { hash, argon2id, verify } from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthRegisterDto } from './dto/register.dto.js';
 import { AuthLoginDto } from './dto/login.dto.js';
-import { CreatedUserDto } from './entities/created-user.dto.js';
+import { CreatedUserDto } from './entities/created-user.js';
 import { JwtService } from '@nestjs/jwt';
 import { UserTokenDto } from './entities/user-token.js';
 import { UserTokenDataDto } from './entities/user-token-data.js';
@@ -88,7 +88,7 @@ export class AuthService {
       },
     });
     if (null === user) {
-      throw new NotFoundException();
+      throw new UnauthorizedException();
     }
 
     const passwordMatch = await AuthService.verifyPassword(
@@ -96,7 +96,7 @@ export class AuthService {
       dto.password,
     );
     if (!passwordMatch) {
-      throw new NotFoundException();
+      throw new UnauthorizedException();
     }
 
     const token = await this.jwtService.signAsync({

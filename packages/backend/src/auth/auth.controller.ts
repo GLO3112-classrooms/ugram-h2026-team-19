@@ -3,13 +3,13 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 import { AuthRegisterDto } from './dto/register.dto.js';
-import { CreatedUserDto } from './entities/created-user.dto.js';
+import { CreatedUserDto } from './entities/created-user.js';
 import { AuthLoginDto } from './dto/login.dto.js';
 import { UserTokenDto } from './entities/user-token.js';
 
@@ -27,8 +27,9 @@ export class AuthController {
     type: CreatedUserDto,
     description: 'The created user info',
   })
-  @ApiConflictResponse({ description: 'The email is already taken' })
-  @ApiConflictResponse({ description: 'The username is already taken' })
+  @ApiConflictResponse({
+    description: 'The email or username is already taken',
+  })
   async register(@Body() body: AuthRegisterDto): Promise<CreatedUserDto> {
     return await this.authService.register(body);
   }
@@ -39,7 +40,7 @@ export class AuthController {
     type: UserTokenDto,
     description: 'The user token used to communicate with the API',
   })
-  @ApiNotFoundResponse({
+  @ApiUnauthorizedResponse({
     description: 'Either the email or the password is invalid',
   })
   async login(@Body() body: AuthLoginDto): Promise<UserTokenDto> {
