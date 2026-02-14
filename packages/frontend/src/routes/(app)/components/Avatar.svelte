@@ -12,5 +12,5 @@
 
 <Avatar.Root class="aspect-square h-full w-fit">
   <Avatar.Image class="object-cover" {src} alt={username} />
-  <Avatar.Fallback><UserIcon /></Avatar.Fallback>
+  <Avatar.Fallback><UserIcon size="75%" /></Avatar.Fallback>
 </Avatar.Root>
