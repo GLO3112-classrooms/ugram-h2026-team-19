@@ -2,7 +2,7 @@
   import { resolve } from "$app/paths";
   import { Separator } from "$lib/components/ui/separator";
   import { getUser } from "$lib/remotes/user.remote";
-  import Avatar from "../components/Avatar.svelte";
+  import Avatar from "../../components/Avatar.svelte";
 
   let { params } = $props();
 
@@ -20,9 +20,9 @@
   <Separator class="my-5" />
   <div class="grid grid-cols-3 gap-1 pt-2">
     {#each user.posts as post (post.id)}
-      <a href={resolve(`/p/${post.id}`)}>
+      <a href={resolve(`/post/${post.id}`)}>
         <img
-          class="aspect-square size-full rounded-sm object-cover bg-muted hover:grayscale"
+          class="aspect-square size-full rounded-sm bg-muted object-cover hover:grayscale"
           src={post.url}
           alt=""
         />
