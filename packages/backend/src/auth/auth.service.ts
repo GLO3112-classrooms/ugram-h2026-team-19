@@ -63,7 +63,6 @@ export class AuthService {
           firstname: dto.firstname,
           lastname: dto.lastname,
           phoneNumber: dto.phoneNumber,
-          profilePicture: dto.profilePicture,
         },
       });
 
@@ -74,7 +73,6 @@ export class AuthService {
       if (e instanceof PrismaClientKnownRequestError && 'P2002' === e.code) {
         throw new ConflictException();
       }
-      console.log(e);
       throw new InternalServerErrorException();
     }
   }

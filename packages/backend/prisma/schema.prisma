@@ -16,7 +16,7 @@ model User {
   firstname      String
   lastname       String
   phoneNumber    String   @map("phone_number")
-  profilePicture String   @map("profile_picture")
+  profilePicture String   @map("profile_picture") @default("")
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("user")

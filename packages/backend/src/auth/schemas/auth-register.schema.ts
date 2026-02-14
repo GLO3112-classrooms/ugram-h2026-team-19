@@ -19,9 +19,6 @@ export const authRegisterSchema = z.object({
   phoneNumber: z.string().meta({
     description: 'The user phone number',
   }),
-  profilePicture: z.string().meta({
-    description: 'The user profile picture URL',
-  }),
 });
 
 export type AuthRegister = z.infer<typeof authRegisterSchema>;
