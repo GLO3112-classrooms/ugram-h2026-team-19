@@ -7,7 +7,7 @@ export const postCreateSchema = z.object({
   keywords: z.array(z.string()).meta({
     description: 'The post keywords (hashtags)',
   }),
-  mentions: z.array(z.string()).meta({
+  mentions: z.array(z.uuid()).meta({
     description: 'The post user mentions (ID of the user)',
   }),
 });
