@@ -8,6 +8,7 @@ function getRandomArbitrary(min = 500, max = 1000) {
 
 export const load: PageLoad = () => {
   return {
+    id: Math.random().toString(36).substring(2, 15),
     user: {
       username: "rastley",
       firstname: "John",
@@ -17,7 +18,8 @@ export const load: PageLoad = () => {
     },
     picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-    tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
-    mention: "anakamura"
+    tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
+    mention: "anakamura",
+    date: "2025-07-01T12:00:00Z"
   };
 };
