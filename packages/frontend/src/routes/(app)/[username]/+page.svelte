@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { Separator } from "$lib/components/ui/separator";
   import type { PageProps } from "./$types";
   import Avatar from "../components/Avatar.svelte";

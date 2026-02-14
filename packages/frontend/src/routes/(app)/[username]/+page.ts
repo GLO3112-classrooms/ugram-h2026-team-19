@@ -6,6 +6,13 @@ function getRandomArbitrary(min = 100, max = 1000) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
+function picture() {
+  return {
+    id: Math.random().toString(36).substring(2, 15),
+    url: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`
+  };
+}
+
 export const load: PageLoad = ({ params }) => {
   return {
     username: params.username,
@@ -14,16 +21,16 @@ export const load: PageLoad = ({ params }) => {
     profilePicture:
       "https://www.visitbournemouth.com/images/events/rick-astley-the-reflection-tour-2026.jpg",
     posts: [
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`
+      picture(),
+      picture(),
+      picture(),
+      picture(),
+      picture(),
+      picture(),
+      picture(),
+      picture(),
+      picture(),
+      picture()
     ]
   };
 };
