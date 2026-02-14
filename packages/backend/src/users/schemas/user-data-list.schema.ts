@@ -7,7 +7,6 @@ export const userDataListQuerySchema = z.object({
   }),
   limit: z.coerce
     .number()
-    .positive()
     .min(1)
     .max(50)
     .optional()
@@ -15,7 +14,7 @@ export const userDataListQuerySchema = z.object({
     .meta({
       description: 'The maximum number of users to return.',
     }),
-  skip: z.coerce.number().positive().min(1).max(1).optional().default(0).meta({
+  skip: z.coerce.number().min(1).optional().default(0).meta({
     description: 'The number of users to skip.',
   }),
 });
@@ -24,7 +23,7 @@ export const userDataListSchema = z.object({
   users: z.array(userPartialDataSchema).meta({
     description: 'The list of users',
   }),
-  total: z.number().positive().min(0).default(0).meta({
+  total: z.number().min(0).default(0).meta({
     description: 'The total number of users',
   }),
 });
