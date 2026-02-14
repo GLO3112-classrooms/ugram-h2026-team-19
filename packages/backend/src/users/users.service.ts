@@ -15,6 +15,7 @@ import {
   USER_AVATAR_UPLOAD_MIME_TYPES,
 } from './schemas/user-avatar-upload.schema.js';
 import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
+import { UserUpdateDataDto } from './entities/user-update-data.js';
 
 @Injectable()
 export class UsersService {
@@ -42,6 +43,44 @@ export class UsersService {
     if (null === user) {
       throw new NotFoundException();
     }
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      phoneNumber: user.phoneNumber,
+      profilePicture: user.profilePicture,
+      createdAt: user.createdAt.toISOString(),
+    };
+  }
+
+  async updateMe(
+    token: UserTokenDataDto,
+    data: UserUpdateDataDto,
+  ): Promise<UserDataDto> {
+    //Verify that at least one field is being updated
+    if (Object.keys(data).length === 0 || (
+      null === data.email &&
+      null === data.firstname &&
+      null === data.lastname &&
+      null === data.phoneNumber
+    )) {
+      throw new BadRequestException('At least one field is expected');
+    }
+
+    const user = await this.prismaService.user.update({
+      where: {
+        id: token.id,
+      },
+      data: {
+        email: data.email,
+        firstname: data.firstname,
+        lastname: data.lastname,
+        phoneNumber: data.phoneNumber,
+      },
+    });
+
     return {
       id: user.id,
       email: user.email,

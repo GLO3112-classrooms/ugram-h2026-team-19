@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -23,6 +25,7 @@ import { AuthGuard } from '../auth/guards/jwt.guard.js';
 import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
 import { userAvatarUploadSchema } from './schemas/user-avatar-upload.schema.js';
 import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
+import { UserUpdateDataDto } from './entities/user-update-data.js';
 
 @Controller('users')
 @ApiTags('Users')
@@ -52,6 +55,29 @@ export class UsersController {
     const token = request['user'] as UserTokenDataDto;
 
     return await this.usersService.retrieveMe(token);
+  }
+
+  @Patch('/me')
+  @UseGuards(AuthGuard)
+  @ApiBody({
+    type: UserUpdateDataDto,
+    description:
+      'The user attributes to update. All fields are optionnal but at least one is expected.',
+  })
+  @ApiOkResponse({
+    type: UserDataDto,
+    description:
+      'The user data was updated and the new attributes are returned.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The request body is malformed.',
+  })
+  async updateMe(
+    @Req() request: FastifyRequest,
+    @Body() body: UserUpdateDataDto,
+  ) {
+    const token = request['user'] as UserTokenDataDto;
+    return await this.usersService.updateMe(token, body);
   }
 
   @Post('me/avatar')
