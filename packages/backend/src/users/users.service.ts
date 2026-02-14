@@ -30,9 +30,7 @@ export class UsersService {
     private readonly s3Service: S3Service,
   ) {}
 
-  async retrieveAll(
-    @Query() query: UserDataListQueryDto,
-  ): Promise<UserDataListDto> {
+  async retrieveAll(query: UserDataListQueryDto): Promise<UserDataListDto> {
     // Get users with pagination and optional search on username
     const users = await this.prismaService.user.findMany({
       select: {
