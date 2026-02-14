@@ -16,6 +16,7 @@ import {
 } from './schemas/user-avatar-upload.schema.js';
 import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
 import { UserUpdateDataDto } from './entities/user-update-data.js';
+import { UserPartialDataDto } from './entities/user-partial-data.js';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,25 @@ export class UsersService {
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
   ) {}
+
+  async retrieveAll(): Promise<UserPartialDataDto[]> {
+    const users = await this.prismaService.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        firstname: true,
+        lastname: true,
+        profilePicture: true,
+      },
+    });
+    return users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      profilePicture: user.profilePicture,
+    }));
+  }
 
   async retrieveMe(token: UserTokenDataDto): Promise<UserDataDto> {
     const user = await this.prismaService.user.findFirst({

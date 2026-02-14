@@ -26,6 +26,7 @@ import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
 import { userAvatarUploadSchema } from './schemas/user-avatar-upload.schema.js';
 import { UserAvatarUploadResponseDto } from './entities/user-avatar-upload.js';
 import { UserUpdateDataDto } from './entities/user-update-data.js';
+import { UserPartialDataDto } from './entities/user-partial-data.js';
 
 @Controller('users')
 @ApiTags('Users')
@@ -39,6 +40,16 @@ export class UsersController {
 
   private static getOrigin(request: FastifyRequest): string {
     return `${request.protocol}://${request.headers.host}`;
+  }
+
+  @Get()
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    description: 'The users were found and their attributes are returned.',
+    type: [UserPartialDataDto],
+  })
+  async retrieveAll(): Promise<UserPartialDataDto[]> {
+    return await this.usersService.retrieveAll();
   }
 
   @Get('/me')
