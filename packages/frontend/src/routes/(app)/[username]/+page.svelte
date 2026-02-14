@@ -17,12 +17,14 @@
   </div>
   <Separator class="my-5" />
   <div class="grid grid-cols-3 gap-1 pt-2">
-    {#each data.posts as post, index (index)}
-      <img
-        class="aspect-square size-full rounded-sm object-cover hover:grayscale"
-        src={post}
-        alt="Random"
-      />
+    {#each data.posts as post (post.id)}
+      <a href={resolve(`/p/${post.id}`)}>
+        <img
+          class="aspect-square size-full rounded-sm object-cover hover:grayscale"
+          src={post.url}
+          alt="Random"
+        />
+      </a>
     {/each}
   </div>
 </div>
