@@ -90,7 +90,7 @@ export class PostsService {
       },
       skip: query.skip,
       take: query.limit,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     const total = await this.prismaService.post.count();
@@ -140,7 +140,7 @@ export class PostsService {
       },
       skip: query.skip,
       take: query.limit,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     const total = await this.prismaService.post.count({
