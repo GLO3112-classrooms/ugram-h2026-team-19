@@ -19,11 +19,13 @@ model User {
   profilePicture String   @map("profile_picture") @default("")
   createdAt      DateTime @default(now()) @map("created_at")
   posts Post[]
+
   @@map("user")
 }
 
 model Post {
-  user User @relation(references: id, fields: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(references: id, fields: [userId], onDelete: Cascade, onUpdate: Cascade)
+  userId String
   id String @id @default(uuid())
   description String
   /// Also known as 'hashtags'
@@ -31,5 +33,6 @@ model Post {
   mentions String[] @default([])
   image String @default("")
   createdAt DateTime @default(now()) @map("created_at")
+
   @@map("post")
 }
