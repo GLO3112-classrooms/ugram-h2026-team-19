@@ -17,7 +17,8 @@ export const load: PageLoad = () => {
     },
     picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-    tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
-    mention: "anakamura"
+    tags: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
+    mention: "anakamura",
+    date: "2025-07-01T12:00:00Z"
   };
 };

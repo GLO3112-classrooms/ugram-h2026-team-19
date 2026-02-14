@@ -12,5 +12,6 @@
     description={data.description}
     tags={data.tags}
     mention={data.mention}
+    date={data.date}
   />
 </div>

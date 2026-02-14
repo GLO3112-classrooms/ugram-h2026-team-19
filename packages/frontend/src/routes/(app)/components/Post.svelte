@@ -11,16 +11,20 @@
     description: string;
     tags: string[];
     mention: string;
+    date: string;
   }
 
-  let { user, picture, description, tags, mention }: Props = $props();
+  let { user, picture, description, tags, mention, date }: Props = $props();
 </script>
 
-<div class="space-y-2">
-  <a class="flex h-10 items-center gap-2 pl-2" href={resolve(`/${user.username}`)}>
-    <Avatar src={user.profilePicture} username={user.username} />
-    <p>@{user.username}</p>
-  </a>
+<div class="space-y-1">
+  <div class="flex items-center justify-between">
+    <a class="flex h-10 items-center gap-2" href={resolve(`/${user.username}`)}>
+      <Avatar src={user.profilePicture} username={user.username} />
+      <p>@{user.username}</p>
+    </a>
+    <p class="text-xs text-gray-500">{new Date(date).toLocaleDateString()}</p>
+  </div>
   <!-- `alt` is empty because both non-present or non-empty trigger a warning -->
   <img class="w-full rounded-sm" src={picture} alt="" />
   <p>{description}</p>
