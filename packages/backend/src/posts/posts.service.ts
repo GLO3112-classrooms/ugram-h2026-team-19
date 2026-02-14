@@ -21,6 +21,7 @@ import { CreatedPostDto } from './entities/created-post.js';
 import { UserTokenData } from 'src/index.schema.js';
 import { GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
+import { PostUpdateDto } from './dto/update-post.dto.js';
 
 @Injectable()
 export class PostsService {
@@ -249,6 +250,48 @@ export class PostsService {
     return { imageUrl: staticImageUrl };
   }
 
+  async patch(
+    token: UserTokenData,
+    id: UUID,
+    body: PostUpdateDto,
+  ): Promise<void> {
+    const post = await this.prismaService.post.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        description: true,
+        keywords: true,
+        mentions: true,
+        user: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (null === post) {
+      throw new NotFoundException();
+    }
+
+    if (token.id !== post.user.id) {
+      throw new ForbiddenException();
+    }
+
+    await this.prismaService.post.update({
+      where: {
+        id: id,
+        user: {
+          id: token.id,
+        },
+      },
+      data: {
+        description: body.description ?? post.description,
+        keywords: body.keywords ?? post.keywords,
+        mentions: body.mentions ?? post.mentions,
+      },
+    });
+  }
+
   async delete(token: UserTokenData, id: UUID): Promise<void> {
     const postAuthor = await this.prismaService.post.findUnique({
       where: {
@@ -260,6 +303,7 @@ export class PostsService {
         },
       },
     });
+
     if (null === postAuthor) {
       throw new NotFoundException();
     }

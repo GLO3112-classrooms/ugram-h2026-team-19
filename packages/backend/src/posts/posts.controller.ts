@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -40,6 +41,7 @@ import { PostDataDto } from './entities/post-data.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
 import { GetPostsQueryDto } from './entities/get-posts-list.js';
+import { PostUpdateDto } from './dto/update-post.dto.js';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -165,6 +167,37 @@ export class PostsController {
 
     const origin = PostsController.getOrigin(request);
     return await this.postsService.uploadImage(token, id, file, origin);
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({
+    type: PostUpdateDto,
+    description: 'The payload to create a new post.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the post to update.',
+  })
+  @ApiNoContentResponse({
+    description: 'The post was updated successfully.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The given post ID resolves no post.',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'The authenticated user does not have the permission to update this post.',
+  })
+  async patch(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+    @Body() body: PostUpdateDto,
+  ) {
+    const token = req['user'] as UserTokenData;
+
+    return await this.postsService.patch(token, id, body);
   }
 
   @Delete(':id')
