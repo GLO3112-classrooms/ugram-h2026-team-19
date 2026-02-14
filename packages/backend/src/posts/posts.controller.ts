@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -32,6 +33,9 @@ import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { type UUID } from 'node:crypto';
 import { UserTokenData } from 'src/index.schema.js';
 import { PostDataDto } from './entities/post-data.js';
+import { type GetMyPostsQuery } from './schemas/get-my-posts.schema.js';
+import { PostDataList } from './schemas/post-data-list.schema.js';
+import { PostDataListDto } from './entities/post-data-list.js';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -59,6 +63,30 @@ export class PostsController {
   })
   async get(@Param('id') id: UUID): Promise<PostDataDto> {
     return await this.postsService.get(id);
+  }
+
+  @Get('/list')
+  @ApiOkResponse({
+    type: PostDataListDto,
+    description: 'The list of posts corresponding to the current page.',
+  })
+  async list(@Query() query: GetMyPostsQuery): Promise<PostDataList> {
+    return await this.postsService.list(query);
+  }
+
+  @Get('/list/my')
+  @ApiOkResponse({
+    type: PostDataListDto,
+    description:
+      'The list of the current user posts corresponding to the current page.',
+  })
+  async listMy(
+    @Req() req: FastifyRequest,
+    @Query() query: GetMyPostsQuery,
+  ): Promise<PostDataList> {
+    const token = req['user'] as UserTokenData;
+
+    return await this.postsService.listMy(token, query);
   }
 
   @Post('/')
