@@ -1,19 +1,15 @@
 <script lang="ts">
-  import type { PageProps } from "./$types";
-  import Avatar from "./components/Avatar.svelte";
+  import { resolve } from "$app/paths";
   import { Separator } from "$lib/components/ui/separator";
+  import type { PageProps } from "./$types";
+  import Avatar from "../components/Avatar.svelte";
 
   let { data }: PageProps = $props();
 </script>
 
 <div class="mx-auto max-w-5xl p-7">
-  <div class="flex items-center gap-2 pl-2">
-    <Avatar
-      src={data.profilePicture}
-      username={data.username}
-      firstname={data.firstname}
-      lastname={data.lastname}
-    />
+  <div class="flex h-20 items-center gap-2 pl-2">
+    <Avatar src={data.profilePicture} username={data.username} />
     <div>
       <p class="text-xs">@{data.username}</p>
       <p>{data.firstname} {data.lastname}</p>
