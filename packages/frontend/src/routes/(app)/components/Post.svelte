@@ -24,7 +24,7 @@
   <!-- `alt` is empty because both non-present or non-empty trigger a warning -->
   <img class="w-full rounded-sm" src={picture} alt="" />
   <p>{description}</p>
-  <p class="flex space-x-1">
+  <p class="flex flex-wrap space-x-1">
     {#each tags as tag (tag)}
       <span class="text-sm text-cyan-600">#{tag}</span>
     {/each}
