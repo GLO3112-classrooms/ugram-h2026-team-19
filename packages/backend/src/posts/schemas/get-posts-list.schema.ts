@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const getMyPostsQuerySchema = z.object({
+export const getPostsQuerySchema = z.object({
   limit: z.number().positive().min(1).max(50).optional().default(10).meta({
     description: 'The number of posts to return',
   }),
@@ -9,4 +9,4 @@ export const getMyPostsQuerySchema = z.object({
   }),
 });
 
-export type GetMyPostsQuery = z.infer<typeof getMyPostsQuerySchema>;
+export type GetPostsQuery = z.infer<typeof getPostsQuerySchema>;

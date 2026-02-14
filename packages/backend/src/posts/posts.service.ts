@@ -19,7 +19,7 @@ import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { PostCreateDto } from './dto/create-post.dto.js';
 import { CreatedPostDto } from './entities/created-post.js';
 import { UserTokenData } from 'src/index.schema.js';
-import { GetMyPostsQuery } from './schemas/get-my-posts.schema.js';
+import { GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 
 @Injectable()
@@ -70,7 +70,7 @@ export class PostsService {
     };
   }
 
-  async list(query: GetMyPostsQuery): Promise<PostDataList> {
+  async list(query: GetPostsQuery): Promise<PostDataList> {
     const posts = await this.prismaService.post.findMany({
       select: {
         id: true,
@@ -112,14 +112,14 @@ export class PostsService {
     };
   }
 
-  async listMy(
-    token: UserTokenData,
-    query: GetMyPostsQuery,
+  async listUserPosts(
+    userId: UUID,
+    query: GetPostsQuery,
   ): Promise<PostDataList> {
     const posts = await this.prismaService.post.findMany({
       where: {
         user: {
-          id: token.id,
+          id: userId,
         },
       },
       select: {
@@ -145,7 +145,7 @@ export class PostsService {
     const total = await this.prismaService.post.count({
       where: {
         user: {
-          id: token.id,
+          id: userId,
         },
       },
     });
