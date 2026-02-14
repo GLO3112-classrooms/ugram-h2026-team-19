@@ -8,7 +8,7 @@ function getRandomArbitrary(min = 100, max = 1000) {
 
 export const load: PageLoad = ({ params }) => {
   return {
-    username: params.user_id,
+    username: params.username,
     firstname: "John",
     lastname: "Doe",
     profilePicture:
