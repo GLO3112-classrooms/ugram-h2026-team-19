@@ -33,7 +33,7 @@ import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { type UUID } from 'node:crypto';
 import { UserTokenData } from 'src/index.schema.js';
 import { PostDataDto } from './entities/post-data.js';
-import { type GetMyPostsQuery } from './schemas/get-my-posts.schema.js';
+import { type GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
 
@@ -44,9 +44,6 @@ import { PostDataListDto } from './entities/post-data-list.js';
   description:
     'The client is trying to access the route without being authenticated.',
 })
-@ApiBadRequestResponse({
-  description: 'The request provided bad body.',
-})
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
@@ -55,6 +52,7 @@ export class PostsController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     type: PostDataDto,
   })
@@ -65,31 +63,34 @@ export class PostsController {
     return await this.postsService.get(id);
   }
 
-  @Get('/list')
+  @Get('list/:userId')
+  @UseGuards(AuthGuard)
+  @ApiParam({
+    name: 'userId',
+    description: 'The user ID from which to fetch the posts.',
+  })
+  @ApiOkResponse({
+    type: PostDataListDto,
+    description: 'The user post list matching the current page.',
+  })
+  async listUserPosts(
+    @Param('userId') userId: UUID,
+    @Query() query: GetPostsQuery,
+  ): Promise<PostDataList> {
+    return await this.postsService.listUserPosts(userId, query);
+  }
+
+  @Get('list')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     type: PostDataListDto,
     description: 'The list of posts corresponding to the current page.',
   })
-  async list(@Query() query: GetMyPostsQuery): Promise<PostDataList> {
+  async list(@Query() query: GetPostsQuery): Promise<PostDataList> {
     return await this.postsService.list(query);
   }
 
-  @Get('/list/my')
-  @ApiOkResponse({
-    type: PostDataListDto,
-    description:
-      'The list of the current user posts corresponding to the current page.',
-  })
-  async listMy(
-    @Req() req: FastifyRequest,
-    @Query() query: GetMyPostsQuery,
-  ): Promise<PostDataList> {
-    const token = req['user'] as UserTokenData;
-
-    return await this.postsService.listMy(token, query);
-  }
-
-  @Post('/')
+  @Post()
   @UseGuards(AuthGuard)
   @ApiBody({
     type: PostCreateDto,
@@ -98,6 +99,9 @@ export class PostsController {
   @ApiCreatedResponse({
     description: 'The post has been created.',
     type: CreatedPostDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'The request provided bad body.',
   })
   async create(
     @Req() request: FastifyRequest,
@@ -136,7 +140,7 @@ export class PostsController {
     description: 'The post image has been uploaded.',
   })
   @ApiBadRequestResponse({
-    description: 'The request body is malformed.',
+    description: 'The request provided bad body.',
   })
   @ApiNotFoundResponse({
     description: 'The given post ID resolves no post.',
