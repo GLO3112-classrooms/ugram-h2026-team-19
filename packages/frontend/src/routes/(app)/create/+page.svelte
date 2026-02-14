@@ -1,0 +1,35 @@
+<script lang="ts">
+  import * as Card from "$lib/components/ui/card/index.js";
+  import * as Field from "$lib/components/ui/field/index.js";
+
+  import { createPost } from "$lib/remotes/post.remote";
+  import Logo from "../components/Logo.svelte";
+  import Header from "../components/Header.svelte";
+  import Image from "./components/Image.svelte";
+  import Description from "./components/Description.svelte";
+  import Tags from "./components/Tags.svelte";
+  import Mention from "./components/Mention.svelte";
+  import Submit from "./components/Submit.svelte";
+</script>
+
+<div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+  <div class="flex w-full max-w-sm flex-col gap-6">
+    <Logo />
+    <div class="flex flex-col gap-6">
+      <Card.Root>
+        <Header title="Create a post" description="Fill in the form below to create a post" />
+        <Card.Content>
+          <form {...createPost}>
+            <Field.Group>
+              <Image />
+              <Description />
+              <Tags />
+              <Mention />
+              <Submit />
+            </Field.Group>
+          </form>
+        </Card.Content>
+      </Card.Root>
+    </div>
+  </div>
+</div>

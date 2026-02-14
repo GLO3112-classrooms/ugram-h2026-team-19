@@ -1,10 +1,17 @@
 // TODO: Replace placeholder data with actual data from the backend when the API is ready
 
-import { query } from "$app/server";
+import { query, form } from "$app/server";
 
 function getRandomArbitrary(min = 100, max = 1000) {
   return Math.floor(Math.random() * (max - min) + min);
 }
+
+export const createPost = form("unchecked", (data) => {
+  // data.tags = (data.tags ?? "")
+  //   .replace(/[^\d\w-_]+/g, " ")
+  //   .trim()
+  //   .split(" ");
+});
 
 export const getPost = query(async () => {
   return {
