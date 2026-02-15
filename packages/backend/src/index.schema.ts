@@ -5,6 +5,7 @@ export * from './auth/schemas/user-token.schema.js';
 export * from './auth/schemas/user-token-data.schema.js';
 
 export * from './users/schemas/user-data.schema.js';
+export * from './users/schemas/user-partial-data.schema.js';
 export * from './users/schemas/user-avatar-upload.schema.js';
 
 export * from './posts/schemas/post-data.schema.js';

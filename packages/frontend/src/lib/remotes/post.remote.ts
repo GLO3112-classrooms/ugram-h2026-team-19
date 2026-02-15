@@ -3,15 +3,27 @@ import { query, form, getRequestEvent } from "$app/server";
 import { API_URL } from "$env/static/private";
 import { postCreateSchema, postImageUploadSchema } from "backend/schemas";
 import { error, invalid, redirect } from "@sveltejs/kit";
+import { getUsers } from "$lib/remotes/user.remote";
+
+async function getMentionId(mention: string) {
+  const { users } = await getUsers({ search: mention, limit: 1 });
+
+  if (!users.length || users[0].username !== mention) return null;
+
+  return users[0].id;
+}
 
 const createPostSchema = postCreateSchema
   .extend(postImageUploadSchema.shape)
-  .extend({ keywords: z.string().optional(), mention: z.string().optional() }) // TODO: uuid
+  .extend({ keywords: z.string().optional(), mention: z.string().optional() })
   .omit({ mentions: true });
 
-export const createPost = form(createPostSchema, async (data) => {
+export const createPost = form(createPostSchema, async (data, issue) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
+
+  const mention = data.mention ? await getMentionId(data.mention) : null;
+  if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
   let response = await fetch(API_URL + "/posts", {
     method: "POST",
@@ -26,7 +38,7 @@ export const createPost = form(createPostSchema, async (data) => {
         .trim()
         .split(" ")
         .filter((keyword) => keyword.length),
-      mentions: data.mention ? [data.mention] : []
+      mentions: mention ? [mention] : []
     })
   });
 
