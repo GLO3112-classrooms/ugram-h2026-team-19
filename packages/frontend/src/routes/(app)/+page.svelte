@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getPosts } from "$lib/remotes/posts.remote";
+  import { getPosts } from "$lib/remotes/post.remote";
   import Post from "./components/Post.svelte";
 </script>
 
@@ -9,9 +9,9 @@
       user={post.user}
       picture={post.picture}
       description={post.description}
-      tags={post.tags}
-      mention={post.mention}
-      date={post.date}
+      keywords={post.keywords}
+      mentions={post.mentions}
+      date={post.createdAt}
     />
   {/each}
 </div>

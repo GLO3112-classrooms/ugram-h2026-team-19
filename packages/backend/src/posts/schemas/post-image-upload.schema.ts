@@ -7,7 +7,7 @@ export const POST_IMAGE_UPLOAD_MIME_TYPES: z.core.util.MimeTypes[] = [
   'image/gif',
 ];
 
-export const POST_IMAGE_UPLOAD_MAX_SIZE = 1024 * 1024; /* 1MB */
+export const POST_IMAGE_UPLOAD_MAX_SIZE = 1024 * 1024 * 5; /* 5MB */
 
 export const postImageUploadSchema = z.object({
   image: z

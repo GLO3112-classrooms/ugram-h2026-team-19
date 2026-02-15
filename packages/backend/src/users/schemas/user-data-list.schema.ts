@@ -8,7 +8,7 @@ export const userDataListQuerySchema = z.object({
   limit: z.coerce.number().min(1).max(50).optional().default(10).meta({
     description: 'The maximum number of users to return.',
   }),
-  skip: z.coerce.number().min(1).optional().default(0).meta({
+  skip: z.coerce.number().min(0).optional().default(0).meta({
     description: 'The number of users to skip.',
   }),
 });

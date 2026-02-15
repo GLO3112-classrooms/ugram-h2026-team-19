@@ -16,4 +16,4 @@ export const userPartialDataSchema = z.object({
   }),
 });
 
-export type UserData = z.infer<typeof userPartialDataSchema>;
+export type UserPartialData = z.infer<typeof userPartialDataSchema>;
