@@ -1,17 +1,91 @@
 <script lang="ts">
+  import type { PostData } from "backend/schemas";
+  import { onMount } from "svelte";
+  import { resolve } from "$app/paths";
   import { getPosts } from "$lib/remotes/post.remote";
   import Post from "./components/Post.svelte";
+
+  let posts = $state<PostData[]>([]);
+  let loading = $state(false);
+  let hasMore = $state(true);
+  let error = $state(false);
+  let total = 0;
+
+  async function loadMorePosts() {
+    if (error || loading || !hasMore) return;
+
+    loading = true;
+    try {
+      const result = await getPosts(posts.length);
+      posts = [...posts, ...result.posts];
+      total = result.total;
+      hasMore = posts.length < total;
+
+      if (hasMore && !isPageScrollable()) {
+        loading = false;
+        await loadMorePosts();
+      }
+    } catch {
+      error = true;
+    } finally {
+      loading = false;
+    }
+  }
+
+  function isPageScrollable() {
+    return document.documentElement.scrollHeight > window.innerHeight;
+  }
+
+  function handleScroll() {
+    if (error || loading || !hasMore) return;
+
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    if (scrollTop + windowHeight >= documentHeight * 0.8) {
+      loadMorePosts();
+    }
+  }
+
+  onMount(() => {
+    loadMorePosts();
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  });
 </script>
 
 <div class="mx-auto max-w-5xl space-y-5 p-7">
-  {#each await getPosts() as post (post.id)}
+  {#each posts as post (post.id)}
     <Post
       user={post.user}
-      picture={post.picture}
+      picture={post.image}
       description={post.description}
       keywords={post.keywords}
       mentions={post.mentions}
       date={post.createdAt}
     />
   {/each}
+
+  {#if error}
+    <p class="py-8 text-center text-red-500">
+      Oops! Something went wrong while loading posts. Please try again later.
+    </p>
+  {:else if loading}
+    <div class="flex justify-center py-8">
+      <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
+    </div>
+  {:else if !hasMore && posts.length}
+    <p class="py-8 text-center text-gray-500">You've reached the end of the posts! 😱</p>
+  {:else if !posts.length}
+    <p class="py-8 text-center text-gray-500">
+      No post yet! 😔 Be the first to share something, <a
+        class="text-cyan-600 underline"
+        href={resolve("/create")}>create a post</a
+      >!
+    </p>
+  {/if}
 </div>

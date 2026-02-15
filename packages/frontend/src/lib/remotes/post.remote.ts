@@ -1,15 +1,9 @@
-// TODO: Replace placeholder data with actual data from the backend when the API is ready
-
 import * as z from "zod";
 import { query, form, getRequestEvent } from "$app/server";
 import { API_URL } from "$env/static/private";
 import { postCreateSchema, postImageUploadSchema } from "backend/schemas";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { getUsers } from "$lib/remotes/user.remote";
-
-function getRandomArbitrary(min = 100, max = 1000) {
-  return Math.floor(Math.random() * (max - min) + min);
-}
 
 async function getMentionId(mention: string) {
   const { users } = await getUsers({ search: mention, limit: 1 });
@@ -104,51 +98,20 @@ export const getPost = query(z.uuid(), async (id) => {
   }
 });
 
-export const getPosts = query(async () => {
-  return [
-    {
-      id: Math.random().toString(36).substring(2, 15),
-      user: {
-        username: "rastley",
-        firstname: "John",
-        lastname: "Doe",
-        profilePicture:
-          "https://www.visitbournemouth.com/images/events/rick-astley-the-reflection-tour-2026.jpg"
-      },
-      picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-      keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust", "test"],
-      mentions: ["anakamura"],
-      createdAt: "2025-07-01T12:00:00Z"
-    },
-    {
-      id: Math.random().toString(36).substring(2, 15),
-      user: {
-        username: "anakamura",
-        firstname: "John",
-        lastname: "Doe",
-        profilePicture:
-          "https://numero.com/wp-content/uploads/2025/07/aya-nakamura-meilleurs-looks-flammes-2025-1.webp"
-      },
-      picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-      keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
-      mentions: ["rastley"],
-      createdAt: "2025-06-30T12:00:00Z"
-    },
-    {
-      id: Math.random().toString(36).substring(2, 15),
-      user: {
-        username: "cdion",
-        firstname: "John",
-        lastname: "Doe",
-        profilePicture: "https://browvopetshop.com/wp-content/uploads/2024/07/Celine-Dion.jpg"
-      },
-      picture: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`,
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dolor iriure odio.",
-      keywords: ["nature", "photography", "travel", "adventure", "explore", "wanderlust"],
-      mentions: ["rastley"],
-      createdAt: "2025-06-29T12:00:00Z"
-    }
-  ];
+export const getPosts = query(z.number(), async (skip) => {
+  const { cookies } = getRequestEvent();
+  const token = cookies.get("token");
+
+  const response = await fetch(API_URL + `/posts/list?skip=${skip}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 200:
+      return await response.json();
+    case 401:
+      return redirect(303, "/signin");
+    default:
+      return error(500, "Something went wrong");
+  }
 });
