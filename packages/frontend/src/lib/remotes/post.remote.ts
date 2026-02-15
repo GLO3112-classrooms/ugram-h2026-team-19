@@ -1,7 +1,12 @@
 import * as z from "zod";
-import { query, form, getRequestEvent } from "$app/server";
+import { query, form, getRequestEvent, command } from "$app/server";
 import { API_URL } from "$env/static/private";
-import { postCreateSchema, postImageUploadSchema } from "backend/schemas";
+import {
+  postCreateSchema,
+  type PostData,
+  type PostDataList,
+  postImageUploadSchema
+} from "backend/schemas";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { getUsers } from "$lib/remotes/user.remote";
 
@@ -78,7 +83,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   }
 });
 
-export const getPost = query(z.uuid(), async (id) => {
+export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
@@ -98,7 +103,7 @@ export const getPost = query(z.uuid(), async (id) => {
   }
 });
 
-export const getPosts = query(z.number(), async (skip) => {
+export const getPosts = query(z.number(), async (skip): Promise<PostDataList> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
@@ -111,6 +116,72 @@ export const getPosts = query(z.number(), async (skip) => {
       return await response.json();
     case 401:
       return redirect(303, "/signin");
+    default:
+      return error(500, "Something went wrong");
+  }
+});
+
+const updatePostSchema = z.object({
+  id: z.uuid(),
+  description: z.string().optional(),
+  keywords: z.string().optional(),
+  mention: z.string().optional()
+});
+
+export const updatePost = form(updatePostSchema, async (data, issue) => {
+  const { cookies } = getRequestEvent();
+  const token = cookies.get("token");
+
+  const mention = data.mention ? await getMentionId(data.mention) : null;
+  if (data.mention && !mention) return invalid(issue.mention("User not found"));
+
+  const response = await fetch(API_URL + `/posts/${data.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      description: data.description,
+      keywords: (data.keywords ?? "")
+        .replace(/[^\w-_]+/g, " ")
+        .trim()
+        .split(" ")
+        .filter((keyword) => keyword.length),
+      mentions: mention ? [mention] : []
+    })
+  });
+
+  switch (response.status) {
+    case 204:
+      return redirect(303, `/post/${data.id}`);
+    case 401:
+      return redirect(303, "/signin");
+    // 403 and 404 are not intended to happen here, so we treat them as unexpected errors
+    case 403:
+    case 404:
+    default:
+      return error(500, "Something went wrong");
+  }
+});
+
+export const deletePost = command(z.uuid(), async (id) => {
+  const { cookies } = getRequestEvent();
+  const token = cookies.get("token");
+
+  const response = await fetch(API_URL + `/posts/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 204:
+      return { success: true };
+    case 401:
+      return { success: false };
+    // 403 and 404 are not intended to happen here, so we treat them as unexpected errors
+    case 403:
+    case 404:
     default:
       return error(500, "Something went wrong");
   }
