@@ -13,4 +13,7 @@
       <AtSignIcon />
     </InputGroup.Addon>
   </InputGroup.Root>
+  {#each createPost.fields.mention.issues() as issue, index (index)}
+    <Field.Error>{issue.message}</Field.Error>
+  {/each}
 </Field.Field>
