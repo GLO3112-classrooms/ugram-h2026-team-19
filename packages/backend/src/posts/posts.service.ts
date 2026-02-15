@@ -84,33 +84,6 @@ export class PostsService {
   }
 
   async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
-    console.log({
-      where: fromUserID
-        ? {
-            user: {
-              id: fromUserID,
-            },
-          }
-        : undefined,
-      select: {
-        id: true,
-        description: true,
-        keywords: true,
-        mentions: true,
-        image: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profilePicture: true,
-          },
-        },
-      },
-      skip: query.skip,
-      take: query.limit,
-      orderBy: { createdAt: 'desc' },
-    });
     const posts = await this.prismaService.post.findMany({
       where: fromUserID
         ? {
