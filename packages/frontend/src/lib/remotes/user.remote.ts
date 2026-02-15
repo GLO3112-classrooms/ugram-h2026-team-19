@@ -1,5 +1,6 @@
 // TODO: Replace placeholder data with actual data from the backend when the API is ready
 
+import type { UserData } from "backend/schemas";
 import { z } from "zod";
 import { error, redirect } from "@sveltejs/kit";
 import { getRequestEvent, query } from "$app/server";
@@ -15,6 +16,25 @@ function picture() {
     url: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`
   };
 }
+
+export const getMe = query(async (): Promise<UserData> => {
+  const { cookies } = getRequestEvent();
+  const token = cookies.get("token");
+
+  const response = await fetch(API_URL + "/users/me", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 200:
+      return await response.json();
+    case 401:
+    case 404:
+      return redirect(303, "/signin");
+    default:
+      return error(500, "Something went wrong");
+  }
+});
 
 export const getUser = query(z.string(), async (username) => {
   return {
