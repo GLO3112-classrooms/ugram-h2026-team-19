@@ -56,11 +56,23 @@ export class PostsService {
       throw new NotFoundException();
     }
 
+    const mentions = (
+      await Promise.all(
+        post.mentions.map(
+          async (mention) =>
+            await this.prismaService.user.findUnique({
+              where: { id: mention },
+              select: { id: true, username: true },
+            }),
+        ),
+      )
+    ).filter((mention) => null !== mention);
+
     return {
       id: post.id,
       description: post.description,
       keywords: post.keywords,
-      mentions: post.mentions,
+      mentions: mentions,
       image: post.image,
       createdAt: post.createdAt.toISOString(),
       user: {
@@ -71,8 +83,15 @@ export class PostsService {
     };
   }
 
-  async list(query: GetPostsQuery): Promise<PostDataList> {
-    const posts = await this.prismaService.post.findMany({
+  async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
+    console.log({
+      where: fromUserID
+        ? {
+            user: {
+              id: fromUserID,
+            },
+          }
+        : undefined,
       select: {
         id: true,
         description: true,
@@ -92,37 +111,14 @@ export class PostsService {
       take: query.limit,
       orderBy: { createdAt: 'desc' },
     });
-
-    const total = await this.prismaService.post.count();
-
-    return {
-      posts: posts.map((p) => ({
-        id: p.id,
-        description: p.description,
-        keywords: p.keywords,
-        mentions: p.mentions,
-        image: p.image,
-        createdAt: p.createdAt.toISOString(),
-        user: {
-          id: p.user.id,
-          username: p.user.username,
-          profilePicture: p.user.profilePicture,
-        },
-      })),
-      total: total,
-    };
-  }
-
-  async listUserPosts(
-    userId: UUID,
-    query: GetPostsQuery,
-  ): Promise<PostDataList> {
     const posts = await this.prismaService.post.findMany({
-      where: {
-        user: {
-          id: userId,
-        },
-      },
+      where: fromUserID
+        ? {
+            user: {
+              id: fromUserID,
+            },
+          }
+        : undefined,
       select: {
         id: true,
         description: true,
@@ -144,19 +140,25 @@ export class PostsService {
     });
 
     const total = await this.prismaService.post.count({
-      where: {
-        user: {
-          id: userId,
-        },
-      },
+      where: fromUserID ? { user: { id: fromUserID } } : undefined,
     });
 
-    return {
-      posts: posts.map((p) => ({
+    const refinedPosts = await Promise.all(
+      posts.map(async (p) => ({
         id: p.id,
         description: p.description,
         keywords: p.keywords,
-        mentions: p.mentions,
+        mentions: (
+          await Promise.all(
+            p.mentions.map(
+              async (mention) =>
+                await this.prismaService.user.findUnique({
+                  where: { id: mention },
+                  select: { id: true, username: true },
+                }),
+            ),
+          )
+        ).filter((mention) => null !== mention),
         image: p.image,
         createdAt: p.createdAt.toISOString(),
         user: {
@@ -165,8 +167,19 @@ export class PostsService {
           profilePicture: p.user.profilePicture,
         },
       })),
+    );
+
+    return {
+      posts: refinedPosts,
       total: total,
     };
+  }
+
+  async listUserPosts(
+    userId: UUID,
+    query: GetPostsQuery,
+  ): Promise<PostDataList> {
+    return await this.list(query, userId);
   }
 
   async create(

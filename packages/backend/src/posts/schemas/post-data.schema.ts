@@ -10,6 +10,15 @@ export const postDataAuthorSchema = z.object({
   }),
 });
 
+export const postDataMentionSchema = z.object({
+  id: z.uuid().meta({
+    description: 'The ID of the user',
+  }),
+  username: z.string().meta({
+    description: 'The username of the user',
+  }),
+});
+
 export const postDataSchema = z.object({
   id: z.uuid().meta({ description: 'The ID of the post' }),
   description: z.string().meta({
@@ -18,7 +27,7 @@ export const postDataSchema = z.object({
   keywords: z.array(z.string()).meta({
     description: 'The post keywords (hashtags)',
   }),
-  mentions: z.array(z.uuid()).meta({
+  mentions: z.array(postDataMentionSchema).meta({
     description: 'The post user mentions (list of user ID)',
   }),
   image: z.string().meta({
