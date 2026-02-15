@@ -9,6 +9,7 @@ export * from './users/schemas/user-partial-data.schema.js';
 export * from './users/schemas/user-avatar-upload.schema.js';
 
 export * from './posts/schemas/post-data.schema.js';
+export * from './posts/schemas/post-data-list.schema.js';
 export * from './posts/schemas/created-post.schema.js';
 export * from './posts/schemas/post-create.schema.js';
 export * from './posts/schemas/post-image-upload.schema.js';
