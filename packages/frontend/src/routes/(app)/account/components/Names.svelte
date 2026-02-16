@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Field from "$lib/components/ui/field";
   import { patchMe } from "$lib/remotes/user.remote";
-  import LabeledInputGroup from "../../../../lib/components/LabeledInputGroup.svelte";
+  import LabeledInputGroup from "$lib/components/LabeledInputGroup.svelte";
 
   interface Props {
     firstname: string;
