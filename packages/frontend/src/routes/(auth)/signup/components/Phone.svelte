@@ -12,4 +12,7 @@
     placeholder="(123) 456-7890"
     required
   />
+  {#each signUp.fields.phoneNumber.issues() as issue, index (index)}
+    <Field.Error>{issue.message}</Field.Error>
+  {/each}
 </Field.Field>

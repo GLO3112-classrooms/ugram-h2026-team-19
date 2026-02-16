@@ -19,4 +19,7 @@
     </Field.Field>
   </Field.Field>
   <Field.Description>Must be at least 8 characters long.</Field.Description>
+  {#each signUp.fields.password.issues() as issue, index (index)}
+    <Field.Error>{issue.message}</Field.Error>
+  {/each}
 </Field.Field>
