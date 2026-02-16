@@ -3,9 +3,9 @@
   import { Separator } from "$lib/components/ui/separator";
   import { getUser } from "$lib/remotes/user.remote";
   import User from "$lib/components/User.svelte";
-  import type {PostData} from "backend/schemas";
-  import {getPosts} from "$lib/remotes/post.remote";
-  import {onMount} from "svelte";
+  import type { PostData } from "backend/schemas";
+  import { getPosts } from "$lib/remotes/post.remote";
+  import { onMount } from "svelte";
 
   let { params } = $props();
 
@@ -64,7 +64,7 @@
   });
 </script>
 
-<div class="mx-auto w-xs md:w-3xl p-3 md:p-7">
+<div class="mx-auto w-xs p-3 md:w-3xl md:p-7">
   <User {...user} />
   <Separator class="my-5" />
   <div class="grid grid-cols-3 gap-1 pt-2">
@@ -88,8 +88,6 @@
       <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
     </div>
   {:else if !posts.length}
-    <p class="py-8 text-center text-gray-500">
-        This user hasn't posted anything yet.
-    </p>
+    <p class="py-8 text-center text-gray-500">This user hasn't posted anything yet.</p>
   {/if}
 </div>
