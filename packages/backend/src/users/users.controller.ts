@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -16,6 +17,7 @@ import {
   ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -56,6 +58,24 @@ export class UsersController {
     @Query() query: UserDataListQueryDto,
   ): Promise<UserDataListDto> {
     return await this.usersService.retrieveAll(query);
+  }
+
+  @Get('/:userId')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    description: 'The user was found and its attributes are returned.',
+    type: UserDataDto,
+  })
+  @ApiParam({
+    name: 'userId',
+    description: "The user's ID.",
+    type: String,
+  })
+  @ApiNotFoundResponse({
+    description: 'The user with the specified id was not found.',
+  })
+  async retrieveById(@Param('userId') userId: string): Promise<UserDataDto> {
+    return await this.usersService.retrieveById(userId);
   }
 
   @Get('/me')

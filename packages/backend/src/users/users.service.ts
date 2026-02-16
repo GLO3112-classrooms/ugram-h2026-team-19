@@ -62,6 +62,36 @@ export class UsersService {
     };
   }
 
+  async retrieveById(userId: string): Promise<UserDataDto> {
+    const user = await this.prismaService.user.findFirst({
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstname: true,
+        lastname: true,
+        phoneNumber: true,
+        profilePicture: true,
+        createdAt: true,
+      },
+      where: {
+        id: userId,
+      },
+    });
+    if (null === user) throw new NotFoundException();
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      phoneNumber: user.phoneNumber,
+      profilePicture: user.profilePicture,
+      createdAt: user.createdAt.toISOString(),
+    };
+  }
+
   async retrieveMe(token: UserTokenDataDto): Promise<UserDataDto> {
     const user = await this.prismaService.user.findFirst({
       select: {
