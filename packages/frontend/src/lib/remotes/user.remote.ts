@@ -1,10 +1,10 @@
 // TODO: Replace placeholder data with actual data from the backend when the API is ready
 
-import type { UserData } from "backend/schemas";
-import { z } from "zod";
-import { error, redirect } from "@sveltejs/kit";
-import { getRequestEvent, query } from "$app/server";
+import { form, getRequestEvent, query } from "$app/server";
 import { API_URL } from "$env/static/private";
+import { error, redirect } from "@sveltejs/kit";
+import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
+import { z } from "zod";
 
 function getRandomArbitrary(min = 100, max = 1000) {
   return Math.floor(Math.random() * (max - min) + min);
@@ -30,6 +30,30 @@ export const getMe = query(async (): Promise<UserData> => {
       return await response.json();
     case 401:
     case 404:
+      return redirect(303, "/signin");
+    default:
+      return error(500, "Something went wrong");
+  }
+});
+
+export const patchMe = form(userUpdateDataSchema, async (body) => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const response = await fetch(`${API_URL}/users/me`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  switch (response.status) {
+    case 200:
+      break;
+    case 400:
+      return error(400, "Malformed body");
+    case 401:
       return redirect(303, "/signin");
     default:
       return error(500, "Something went wrong");
@@ -83,3 +107,29 @@ export const getUsers = query(
     }
   }
 );
+
+export const postAvatar = form(userAvatarUploadSchema, async ({ avatar }) => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const body = new FormData();
+  body.append("avatar", avatar);
+
+  const response = await fetch(`${API_URL}/users/me/avatar`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body
+  });
+
+  switch (response.status) {
+    case 201:
+      break;
+    case 400:
+      return error(400, "Malformed body");
+    case 401:
+      return redirect(303, "/signin");
+    default:
+      return error(500, await response.text());
+  }
+});
