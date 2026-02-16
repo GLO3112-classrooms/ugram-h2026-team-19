@@ -3,8 +3,8 @@
   import * as Field from "$lib/components/ui/field/index.js";
 
   import { createPost } from "$lib/remotes/post.remote";
-  import Logo from "../components/Logo.svelte";
-  import Header from "../components/Header.svelte";
+  import Logo from "$lib/components/Logo.svelte";
+  import Header from "$lib/components/Header.svelte";
   import Image from "./components/Image.svelte";
   import Description from "./components/Description.svelte";
   import Keywords from "./components/Keywords.svelte";

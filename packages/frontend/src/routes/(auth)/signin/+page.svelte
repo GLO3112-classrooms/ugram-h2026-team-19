@@ -2,8 +2,8 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Field from "$lib/components/ui/field/index.js";
 
-  import Header from "../../(app)/components/Header.svelte";
-  import Logo from "../../(app)/components/Logo.svelte";
+  import Header from "$lib/components/Header.svelte";
+  import Logo from "$lib/components/Logo.svelte";
   import Password from "./components/Password.svelte";
   import Submit from "./components/Submit.svelte";
   import Email from "./components/Email.svelte";

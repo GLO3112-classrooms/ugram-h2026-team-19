@@ -3,7 +3,7 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Field from "$lib/components/ui/field";
   import { createPost } from "$lib/remotes/post.remote";
-  import Code from "../../components/Code.svelte";
+  import Code from "$lib/components/Code.svelte";
 </script>
 
 <div class="grid w-full gap-1.5">
