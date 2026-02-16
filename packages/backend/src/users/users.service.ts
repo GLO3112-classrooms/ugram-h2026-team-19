@@ -22,12 +22,14 @@ import {
   UserDataListQueryDto,
 } from './entities/user-data-list.js';
 import { UserPartialDataDto } from './entities/user-partial-data.js';
+import { StaticService } from '../static/static.service.js';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
+    private readonly staticService: StaticService,
   ) {}
 
   async retrieveAll(query: UserDataListQueryDto): Promise<UserDataListDto> {
@@ -160,7 +162,6 @@ export class UsersService {
   async uploadAvatar(
     token: UserTokenDataDto,
     file: MultipartFile,
-    origin: string,
   ): Promise<UserAvatarUploadResponseDto> {
     if (!USER_AVATAR_UPLOAD_MIME_TYPES.includes(file.mimetype)) {
       throw new BadRequestException('Invalid mime type');
@@ -187,7 +188,7 @@ export class UsersService {
       uploadStream,
       file.mimetype,
     );
-    const staticAvatarUrl = `${origin}/static/avatars/${filename}`;
+    const staticAvatarUrl = `${this.staticService.getStaticOrigin()}/static/avatars/${filename}`;
 
     await this.prismaService.user.update({
       where: {

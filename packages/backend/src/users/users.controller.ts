@@ -45,10 +45,6 @@ import { UserPartialDataDto } from './entities/user-partial-data.js';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  private static getOrigin(request: FastifyRequest): string {
-    return `${request.protocol}://${request.headers.host}`;
-  }
-
   @Get()
   @UseGuards(AuthGuard)
   @ApiOkResponse({
@@ -155,7 +151,6 @@ export class UsersController {
       throw new BadRequestException();
     }
 
-    const origin = UsersController.getOrigin(request);
-    return await this.usersService.uploadAvatar(token, file, origin);
+    return await this.usersService.uploadAvatar(token, file);
   }
 }
