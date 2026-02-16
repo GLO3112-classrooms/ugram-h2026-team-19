@@ -19,7 +19,7 @@ Ugram est une application de partage de photos inspirée d'Instagram, développ�
 Voici les différentes étapes pour installer et exécuter le projet en local :
 
 > [!NOTE]
-> Veuillez noter que le projet utilise pnpm comme gestionnaire de paquets. Vous pouvez suivre les instructions d'installation de pnpm sur leur site officiel : [https://pnpm.io/installation](https://pnpm.io/installation).
+> Veuillez noter que le projet nécessite Docker, vous pouvez retrouver les informations d'installation sur leur site officiel : [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
 
 1. Cloner le dépôt et se positionner sur la branche de release :
 ```bash
@@ -29,12 +29,8 @@ git clone git@github.com:GLO3112-classrooms/ugram-h2026-team-19.git
 ```bash
 git switch release-1
 ```
-3. Installer les dépendances nécessaires :
-```bash
-pnpm install
-```
-4. Configurer les variables d'environnement en créant un fichier `.env` à la racine du projet et en y ajoutant les variables nécessaires (vous pouvez vous référer au fichier `.env.example` pour connaître les variables requises).
-5. Démarrer le projet avec Docker Compose :
+3. Configurer les variables d'environnement en créant un fichier `.env` à la racine du projet et en y ajoutant les variables nécessaires (vous pouvez vous référer au fichier `.env.example` pour connaître les variables requises).
+4. Démarrer le projet avec Docker Compose :
 ```bash
 docker-compose up
 ```
