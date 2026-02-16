@@ -1,21 +1,8 @@
-// TODO: Replace placeholder data with actual data from the backend when the API is ready
-
 import { form, getRequestEvent, query } from "$app/server";
 import { API_URL } from "$env/static/private";
 import { error, redirect } from "@sveltejs/kit";
 import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
 import { z } from "zod";
-
-function getRandomArbitrary(min = 100, max = 1000) {
-  return Math.floor(Math.random() * (max - min) + min);
-}
-
-function picture() {
-  return {
-    id: Math.random().toString(36).substring(2, 15),
-    url: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`
-  };
-}
 
 export const getMe = query(async (): Promise<UserData> => {
   const { cookies } = getRequestEvent();
@@ -60,26 +47,24 @@ export const patchMe = form(userUpdateDataSchema, async (body) => {
   }
 });
 
-export const getUser = query(z.string(), async (username) => {
-  return {
-    username: username,
-    firstname: "John",
-    lastname: "Doe",
-    profilePicture:
-      "https://www.visitbournemouth.com/images/events/rick-astley-the-reflection-tour-2026.jpg",
-    posts: [
-      picture(),
-      picture(),
-      picture(),
-      picture(),
-      picture(),
-      picture(),
-      picture(),
-      picture(),
-      picture(),
-      picture()
-    ]
-  };
+export const getUser = query(z.uuid(), async (id) => {
+  const { cookies } = getRequestEvent();
+  const token = cookies.get("token");
+
+  const response = await fetch(API_URL + `/users/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 200:
+      return await response.json();
+    case 401:
+      return redirect(303, "/signin");
+    case 404:
+      return error(404, "User not found");
+    default:
+      return error(500, "Something went wrong");
+  }
 });
 
 export const getUsers = query(

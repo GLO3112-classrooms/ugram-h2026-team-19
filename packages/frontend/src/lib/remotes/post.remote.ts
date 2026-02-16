@@ -103,23 +103,30 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
   }
 });
 
-export const getPosts = query(z.number(), async (skip): Promise<PostDataList> => {
-  const { cookies } = getRequestEvent();
-  const token = cookies.get("token");
+export const getPosts = query(
+  z.object({
+    userId: z.uuid().optional(),
+    skip: z.number().optional().default(0)
+  }),
+  async ({ userId, skip }): Promise<PostDataList> => {
+    const { cookies } = getRequestEvent();
+    const token = cookies.get("token");
 
-  const response = await fetch(API_URL + `/posts/list?skip=${skip}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+    const response = await fetch(
+      API_URL + (userId ? `/posts/list/${userId}?skip=${skip}` : `/posts/list?skip=${skip}`),
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-  switch (response.status) {
-    case 200:
-      return await response.json();
-    case 401:
-      return redirect(303, "/signin");
-    default:
-      return error(500, "Something went wrong");
+    switch (response.status) {
+      case 200:
+        return await response.json();
+      case 401:
+        return redirect(303, "/signin");
+      default:
+        return error(500, "Something went wrong");
+    }
   }
-});
+);
 
 const updatePostSchema = z.object({
   id: z.uuid(),

@@ -61,6 +61,6 @@
   </Button>
 </nav>
 
-<main class="mx-16 flex flex-col items-center">
+<main class="mr-4 ml-12 flex flex-col items-center">
   {@render children?.()}
 </main>
