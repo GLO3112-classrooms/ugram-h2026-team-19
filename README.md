@@ -1,7 +1,7 @@
 # 📷 ugram
+Ugram est une application de partage de photos inspirée d'Instagram, développée dans le cadre du cours GLO-3112 à l'Université Laval. L'objectif de ce projet est de créer une plateforme conviviale pour les utilisateurs afin de partager leurs moments en images, tout en mettant en pratique les compétences acquises en développement web.
 
-## 🎨 Design
-
+## 🎨 Technologies utilisées (Design)
 - Frontend
     - Framework : [SvelteKit](https://svelte.dev)
     - CSS : [Tailwind](https://tailwindcss.com)
@@ -14,6 +14,30 @@
 - Stockage de fichiers : [AWS S3](https://aws.amazon.com/s3)
 - CI/CD : [GitHub Actions](https://docs.github.com/actions), [ESLint](https://eslint.org), [Prettier](https://prettier.io), Git hooks ([Husky](https://typicode.github.io/husky)), analyse de code / coverage, Dependabot
 - Méthode de déploiement : le déploiement suivra les méthodes démontrées dans le cours
+
+## 🚀 Installation
+Voici les différentes étapes pour installer et exécuter le projet en local :
+
+> [!NOTE]
+> Veuillez noter que le projet utilise pnpm comme gestionnaire de paquets. Vous pouvez suivre les instructions d'installation de pnpm sur leur site officiel : [https://pnpm.io/installation](https://pnpm.io/installation).
+
+1. Cloner le dépôt et se positionner sur la branche de release :
+```bash
+git clone git@github.com:GLO3112-classrooms/ugram-h2026-team-19.git
+```
+2. Se rendre sur la branche de release :
+```bash
+git switch release-1
+```
+3. Installer les dépendances nécessaires :
+```bash
+pnpm install
+```
+4. Configurer les variables d'environnement en créant un fichier `.env` à la racine du projet et en y ajoutant les variables nécessaires (vous pouvez vous référer au fichier `.env.example` pour connaître les variables requises).
+5. Démarrer le projet avec Docker Compose :
+```bash
+docker-compose up
+```
 
 ## 👥 Équipe
 
