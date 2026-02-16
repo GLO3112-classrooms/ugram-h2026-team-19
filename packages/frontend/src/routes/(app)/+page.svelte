@@ -61,7 +61,7 @@
   });
 </script>
 
-<div class="mx-auto max-w-5xl space-y-5 p-7">
+<div class="mx-auto max-w-5xl space-y-5 p-3 md:p-7">
   {#each posts as post (post.id)}
     <Post
       id={post.id}
