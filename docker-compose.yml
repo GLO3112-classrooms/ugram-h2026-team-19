@@ -13,9 +13,25 @@ services:
     networks:
       - ugram-network
 
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
+    container_name: ugram-minio
+    ports:
+      - "9000:9000" # web panel
+      - "9001:9001"
+    networks:
+      - ugram-network
+    volumes:
+      - ugram-s3:/data:rw
+    env_file:
+      - .env
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
   backend:
     depends_on:
       - postgres
+      - minio
     image: ugram-backend
     build:
       context: .
@@ -43,21 +59,6 @@ services:
       - .env
     networks:
       - ugram-network
-    restart: unless-stopped
-
-  minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
-    container_name: ugram-minio
-    ports:
-      - "9000:9000" # web panel
-      - "9001:9001"
-    networks:
-      - ugram-network
-    volumes:
-      - ugram-s3:/data:rw
-    env_file:
-      - .env
-    command: server /data --console-address ":9001"
     restart: unless-stopped
 
 networks:
