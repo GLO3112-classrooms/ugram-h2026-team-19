@@ -9,6 +9,7 @@ node_modules/
 .pnpm-store/
 .env.prod
 .env.dev
+.env
 
 packages/backend/dist
 packages/backend/src/prisma/generated
