@@ -4,17 +4,6 @@ import { error, redirect } from "@sveltejs/kit";
 import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
 import { z } from "zod";
 
-function getRandomArbitrary(min = 100, max = 1000) {
-  return Math.floor(Math.random() * (max - min) + min);
-}
-
-function picture() {
-  return {
-    id: Math.random().toString(36).substring(2, 15),
-    url: `https://picsum.photos/${getRandomArbitrary()}/${getRandomArbitrary()}`
-  };
-}
-
 export const getMe = query(async (): Promise<UserData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
