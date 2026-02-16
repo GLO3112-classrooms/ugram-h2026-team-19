@@ -39,6 +39,23 @@ pnpm install
 docker-compose up
 ```
 
+## 🧪 Tests
+Pour tester l'application, assurez-vous d'avoir suivi les étapes d'installation de la section précédente.
+Une fois cela fait, vous pourrez vous rendre sur l'adresse indiquée dans votre console (http://localhost:5173 par défaut)
+
+- Création de compte (`/signup`)
+  - Créez un compte en remplissant les informations du formulaire
+- Connexion (`/signin`)
+  - Connectez-vous avec les informations de votre compte
+- Page d'accueil (`/`)
+  - Visualisez les photos partagées par les utilisateurs
+- Profil utilisateur (`/account`)
+  - Accédez à votre profil pour voir et modifier vos informations personnelles
+- Recherche d'utilisateurs (`/search`)
+  - Recherchez d'autres utilisateurs et visualisez leurs profils
+- Créez un nouveau post (`/create`)
+  - Partagez une nouvelle photo en remplissant le formulaire de création de post
+
 ## 👥 Équipe
 
 - Clément Liénard
