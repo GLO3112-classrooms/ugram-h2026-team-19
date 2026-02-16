@@ -8,6 +8,7 @@
   interface Props {
     id: string;
     user: {
+      id: string;
       username: string;
       profilePicture: string;
     };
@@ -24,7 +25,7 @@
 
 <div class="space-y-1">
   <div class="flex items-center justify-between">
-    <a class="flex h-10 items-center gap-2" href={resolve(`/user/${user.username}`)}>
+    <a class="flex h-10 items-center gap-2" href={resolve(`/user/${user.id}`)}>
       <Avatar src={user.profilePicture} username={user.username} />
       <p>@{user.username}</p>
     </a>

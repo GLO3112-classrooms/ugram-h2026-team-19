@@ -1,12 +1,15 @@
 <script lang="ts">
-  import type { PostData } from "backend/schemas";
-  import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { getMe } from "$lib/remotes/user.remote";
-  import { getPosts } from "$lib/remotes/post.remote";
-  import Post from "$lib/components/Post.svelte";
+  import { Separator } from "$lib/components/ui/separator";
+  import { getUser } from "$lib/remotes/user.remote";
+  import User from "$lib/components/User.svelte";
+  import type {PostData} from "backend/schemas";
+  import {getPosts} from "$lib/remotes/post.remote";
+  import {onMount} from "svelte";
 
-  const me = await getMe();
+  let { params } = $props();
+
+  const user = $derived(await getUser(params.user_id));
 
   let posts = $state<PostData[]>([]);
   let loading = $state(false);
@@ -19,7 +22,7 @@
 
     loading = true;
     try {
-      const result = await getPosts({ skip: posts.length });
+      const result = await getPosts({ userId: user.id, skip: posts.length });
       posts = [...posts, ...result.posts];
       total = result.total;
       hasMore = posts.length < total;
@@ -61,19 +64,20 @@
   });
 </script>
 
-<div class="mx-auto max-w-5xl space-y-5 p-7">
-  {#each posts as post (post.id)}
-    <Post
-      id={post.id}
-      user={post.user}
-      image={post.image}
-      description={post.description}
-      keywords={post.keywords}
-      mentions={post.mentions}
-      date={post.createdAt}
-      own={me?.id === post.user.id}
-    />
-  {/each}
+<div class="mx-auto w-xs md:w-3xl p-3 md:p-7">
+  <User {...user} />
+  <Separator class="my-5" />
+  <div class="grid grid-cols-3 gap-1 pt-2">
+    {#each posts as post (post.id)}
+      <a href={resolve(`/post/${post.id}`)}>
+        <img
+          class="aspect-square size-full rounded-sm bg-muted object-cover hover:grayscale"
+          src={post.image}
+          alt=""
+        />
+      </a>
+    {/each}
+  </div>
 
   {#if error}
     <p class="py-8 text-center text-red-500">
@@ -83,14 +87,9 @@
     <div class="flex justify-center py-8">
       <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
     </div>
-  {:else if !hasMore && posts.length}
-    <p class="py-8 text-center text-gray-500">You've reached the end of the posts! 😱</p>
   {:else if !posts.length}
     <p class="py-8 text-center text-gray-500">
-      No post yet! 😔 Be the first to share something, <a
-        class="text-cyan-600 underline"
-        href={resolve("/create")}>create a post</a
-      >!
+        This user hasn't posted anything yet.
     </p>
   {/if}
 </div>
