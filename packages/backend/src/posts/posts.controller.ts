@@ -36,7 +36,7 @@ import { CreatedPostDto } from './entities/created-post.js';
 import { postImageUploadSchema } from './schemas/post-image-upload.schema.js';
 import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { type UUID } from 'node:crypto';
-import { UserTokenData } from 'src/index.schema.js';
+import { UserTokenData } from '../index.schema.js';
 import { PostDataDto } from './entities/post-data.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
@@ -52,10 +52,6 @@ import { PostUpdateDto } from './dto/update-post.dto.js';
 })
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
-
-  private static getOrigin(request: FastifyRequest): string {
-    return `${request.protocol}://${request.headers.host}`;
-  }
 
   @Get(':id')
   @UseGuards(AuthGuard)
@@ -165,8 +161,7 @@ export class PostsController {
       throw new BadRequestException();
     }
 
-    const origin = PostsController.getOrigin(request);
-    return await this.postsService.uploadImage(token, id, file, origin);
+    return await this.postsService.uploadImage(token, id, file);
   }
 
   @Patch(':id')

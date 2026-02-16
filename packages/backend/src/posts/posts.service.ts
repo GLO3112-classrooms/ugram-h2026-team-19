@@ -18,16 +18,18 @@ import {
 import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { PostCreateDto } from './dto/create-post.dto.js';
 import { CreatedPostDto } from './entities/created-post.js';
-import { UserTokenData } from 'src/index.schema.js';
+import { UserTokenData } from '../index.schema.js';
 import { GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
+import { StaticService } from '../static/static.service.js';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
+    private readonly staticService: StaticService,
   ) {}
 
   async get(id: UUID) {
@@ -178,7 +180,6 @@ export class PostsService {
     token: UserTokenData,
     postId: UUID,
     file: MultipartFile,
-    origin: string,
   ): Promise<PostImageUploadResponseDto> {
     const postAuthor = await this.prismaService.post.findFirst({
       where: {
@@ -222,7 +223,7 @@ export class PostsService {
       uploadStream,
       file.mimetype,
     );
-    const staticImageUrl = `${origin}/static/images/${filename}`;
+    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/images/${filename}`;
 
     await this.prismaService.post.update({
       where: {
