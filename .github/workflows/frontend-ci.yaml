@@ -1,0 +1,48 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - "packages/frontend/**"
+  pull_request:
+    paths:
+      - "packages/frontend/**"
+
+concurrency:
+  group: ci-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-lint-and-format:
+    name: Check lint and format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: ./packages/frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup env
+        working-directory: ./packages/frontend
+        run: cp .env.example .env
+
+      - name: Run lint
+        working-directory: ./packages/frontend
+        run: pnpm run lint
+
+      - name: Run check
+        working-directory: ./packages/frontend
+        run: pnpm run check
