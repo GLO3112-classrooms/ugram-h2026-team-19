@@ -92,7 +92,7 @@
   <div class="space-y-5 p-7">
     {#each users as user (user.id)}
       <div>
-        <a href={resolve(`/user/${user.username}`)}>
+        <a href={resolve(`/user/${user.id}`)}>
           <User {...user} />
         </a>
       </div>
