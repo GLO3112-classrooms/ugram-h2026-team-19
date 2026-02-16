@@ -3,7 +3,7 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Field from "$lib/components/ui/field";
   import { updatePost } from "$lib/remotes/post.remote";
-  import Code from "../../../components/Code.svelte";
+  import Code from "$lib/components/Code.svelte";
 
   interface Props {
     value: string;

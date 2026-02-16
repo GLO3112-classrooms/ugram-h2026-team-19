@@ -155,6 +155,8 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
   switch (response.status) {
     case 204:
       return redirect(303, `/post/${data.id}`);
+    case 400:
+      return invalid(...(await response.json()).errors);
     case 401:
       return redirect(303, "/signin");
     // 403 and 404 are not intended to happen here, so we treat them as unexpected errors

@@ -68,9 +68,10 @@ export const getUsers = query(
     const { cookies } = getRequestEvent();
     const token = cookies.get("token");
 
-    const response = await fetch(API_URL + `/users?search=${search}&limit=${limit}&skip=${skip}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await fetch(
+      `${API_URL}/users?${new URLSearchParams({ search, limit: limit.toString(), skip: skip.toString() })}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
     switch (response.status) {
       case 200:

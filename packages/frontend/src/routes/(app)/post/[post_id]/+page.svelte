@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getMe } from "$lib/remotes/user.remote";
   import { getPost } from "$lib/remotes/post.remote";
-  import Post from "../../components/Post.svelte";
+  import Post from "$lib/components/Post.svelte";
 
   const me = await getMe();
 
