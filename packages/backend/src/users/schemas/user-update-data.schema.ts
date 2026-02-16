@@ -15,4 +15,4 @@ export const userUpdateDataSchema = z.object({
   }),
 });
 
-export type UserData = z.infer<typeof userUpdateDataSchema>;
+export type UserUpdateData = z.infer<typeof userUpdateDataSchema>;
