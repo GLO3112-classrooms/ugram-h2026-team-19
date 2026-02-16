@@ -33,6 +33,7 @@ import {
   UserDataListDto,
   UserDataListQueryDto,
 } from './entities/user-data-list.js';
+import { UserPartialDataDto } from './entities/user-partial-data.js';
 
 @Controller('users')
 @ApiTags('Users')
@@ -74,7 +75,9 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'The user with the specified id was not found.',
   })
-  async retrieveById(@Param('userId') userId: string): Promise<UserDataDto> {
+  async retrieveById(
+    @Param('userId') userId: string,
+  ): Promise<UserPartialDataDto> {
     return await this.usersService.retrieveById(userId);
   }
 
