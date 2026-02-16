@@ -11,7 +11,7 @@
 
 <svelte:boundary>
   {#await getMe() then user}
-    <form {...patchMe} class="flex max-w-lg flex-col items-center gap-8 *:w-full">
+    <form {...patchMe} class="flex max-w-lg flex-col items-center gap-8 pt-8 *:w-full">
       <div class="flex justify-center gap-6">
         <EditableAvatar avatarUrl={user.profilePicture} />
         <div class="flex flex-col py-2">

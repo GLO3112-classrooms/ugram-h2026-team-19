@@ -30,7 +30,9 @@
   ];
 </script>
 
-<nav class="fixed top-0 flex h-screen w-16 shrink-0 flex-col items-center justify-between p-2">
+<nav
+  class="fixed top-0 flex h-screen w-11 shrink-0 flex-col items-center justify-between py-2 md:w-16 md:px-2"
+>
   <Button variant="link" size="icon-lg" class="cursor-pointer">
     <GalleryVerticalEndIcon />
   </Button>
@@ -61,6 +63,6 @@
   </Button>
 </nav>
 
-<main class="mr-4 ml-12 flex flex-col items-center">
+<main class="mx-11 flex flex-col items-center md:mx-16">
   {@render children?.()}
 </main>
