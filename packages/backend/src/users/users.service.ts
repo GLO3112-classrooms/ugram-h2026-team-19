@@ -21,6 +21,7 @@ import {
   UserDataListDto,
   UserDataListQueryDto,
 } from './entities/user-data-list.js';
+import { UserPartialDataDto } from './entities/user-partial-data.js';
 
 @Injectable()
 export class UsersService {
@@ -62,17 +63,14 @@ export class UsersService {
     };
   }
 
-  async retrieveById(userId: string): Promise<UserDataDto> {
+  async retrieveById(userId: string): Promise<UserPartialDataDto> {
     const user = await this.prismaService.user.findFirst({
       select: {
         id: true,
-        email: true,
         username: true,
         firstname: true,
         lastname: true,
-        phoneNumber: true,
         profilePicture: true,
-        createdAt: true,
       },
       where: {
         id: userId,
@@ -82,13 +80,10 @@ export class UsersService {
 
     return {
       id: user.id,
-      email: user.email,
       username: user.username,
       firstname: user.firstname,
       lastname: user.lastname,
-      phoneNumber: user.phoneNumber,
       profilePicture: user.profilePicture,
-      createdAt: user.createdAt.toISOString(),
     };
   }
 
