@@ -89,7 +89,7 @@
     </InputGroup.Root>
   </div>
 
-  <div class="space-y-5 p-7">
+  <div class="space-y-5 p-3 md:p-7">
     {#each users as user (user.id)}
       <div>
         <a href={resolve(`/user/${user.id}`)}>
