@@ -3,7 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { postAvatar } from "$lib/remotes/user.remote";
-  import { PenIcon, TrashIcon, UploadIcon, UserIcon } from "@lucide/svelte";
+  import { PenIcon, TrashIcon, UploadIcon } from "@lucide/svelte";
 
   interface Props {
     avatarUrl: string;
