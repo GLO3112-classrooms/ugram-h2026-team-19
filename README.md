@@ -32,12 +32,12 @@ git switch release-1
 3. Configurer les variables d'environnement en créant un fichier `.env` à la racine du projet et en y ajoutant les variables nécessaires (vous pouvez vous référer au fichier `.env.example` pour connaître les variables requises).
 4. Démarrer le projet avec Docker Compose :
 ```bash
-docker-compose up
+docker-compose up --build
 ```
 
 ## 🧪 Tests
 Pour tester l'application, assurez-vous d'avoir suivi les étapes d'installation de la section précédente.
-Une fois cela fait, vous pourrez vous rendre sur l'adresse indiquée dans votre console (http://localhost:5173 par défaut)
+Une fois cela fait, vous pourrez vous rendre sur l'adresse indiquée dans votre console (http://localhost:8080)
 
 - Création de compte (`/signup`)
   - Créez un compte en remplissant les informations du formulaire
