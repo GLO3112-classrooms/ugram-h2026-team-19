@@ -36,7 +36,7 @@ export const getMe = query(async (): Promise<UserData> => {
   }
 });
 
-export const patchMe = form(userUpdateDataSchema, async (body): Promise<UserData> => {
+export const patchMe = form(userUpdateDataSchema, async (body) => {
   const token = getRequestEvent().cookies.get("token");
 
   const response = await fetch(`${API_URL}/users/me`, {
