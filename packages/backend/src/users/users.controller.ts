@@ -65,7 +65,7 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: 'The user was found and its attributes are returned.',
-    type: UserDataDto,
+    type: UserPartialDataDto,
   })
   @ApiParam({
     name: 'userId',
