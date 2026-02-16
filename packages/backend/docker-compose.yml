@@ -13,22 +13,6 @@ services:
     networks:
       - ugram-network
 
-  backend:
-    depends_on:
-      - postgres
-    image: ugram-backend
-    build:
-      context: ../../
-      dockerfile: ./packages/backend/Dockerfile
-    container_name: ugram-backend
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env.prod
-    networks:
-      - ugram-network
-    restart: unless-stopped
-
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
     container_name: ugram-minio
@@ -42,6 +26,23 @@ services:
     env_file:
       - .env.prod
     command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  backend:
+    depends_on:
+      - postgres
+      - minio
+    image: ugram-backend
+    build:
+      context: ../../
+      dockerfile: ./packages/backend/Dockerfile
+    container_name: ugram-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.prod
+    networks:
+      - ugram-network
     restart: unless-stopped
 
 networks:
