@@ -32,12 +32,6 @@
               <Phone />
               <Password />
               <Submit />
-              <!-- TODO Please remove the `profilePicture` field -->
-              <input
-                hidden
-                {...signUp.fields.profilePicture.as("text")}
-                value="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fs.yimg.com%2Fos%2Fcreatr-uploaded-images%2F2021-02%2F572c4830-721d-11eb-bb63-96959c3b62f2&f=1&nofb=1&ipt=cdb11597554e70e0cd0367283f54eb8bb0403613c1435d79c2552b27fb0a4abf"
-              />
             </Field.Group>
           </form>
         </Card.Content>
