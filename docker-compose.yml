@@ -52,11 +52,15 @@ services:
     build:
       context: .
       dockerfile: ./packages/frontend/Dockerfile
+      args:
+        - API_URL=http://backend:3000
     container_name: ugram-frontend
     ports:
-      - "80:80"
+      - "8080:8080"
     env_file:
       - .env
+    environment:
+      - ORIGIN=${FRONTEND_ORIGIN}
     networks:
       - ugram-network
     restart: unless-stopped
