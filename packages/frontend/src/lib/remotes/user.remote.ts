@@ -1,15 +1,10 @@
 // TODO: Replace placeholder data with actual data from the backend when the API is ready
 
-import {
-  userAvatarUploadSchema,
-  userUpdateDataSchema,
-  type UserData,
-  type UserUpdateData
-} from "backend/schemas";
-import { z } from "zod";
-import { error, redirect } from "@sveltejs/kit";
 import { form, getRequestEvent, query } from "$app/server";
 import { API_URL } from "$env/static/private";
+import { error, redirect } from "@sveltejs/kit";
+import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
+import { z } from "zod";
 
 function getRandomArbitrary(min = 100, max = 1000) {
   return Math.floor(Math.random() * (max - min) + min);
