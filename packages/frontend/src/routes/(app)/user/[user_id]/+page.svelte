@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { Separator } from "$lib/components/ui/separator";
+  import { Separator } from "$lib/shadcn/separator";
   import { getUser } from "$lib/remotes/user.remote";
   import User from "$lib/components/User.svelte";
   import type { PostData } from "backend/schemas";

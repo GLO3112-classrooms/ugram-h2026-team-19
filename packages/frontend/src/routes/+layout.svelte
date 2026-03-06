@@ -1,7 +1,7 @@
 <script lang="ts">
   import "./layout.css";
   import favicon from "$lib/assets/favicon.svg";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import * as Tooltip from "$lib/shadcn/tooltip/index.js";
 
   let { children } = $props();
 </script>

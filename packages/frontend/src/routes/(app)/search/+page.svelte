@@ -3,7 +3,7 @@
   import type { UserData } from "backend/schemas";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import * as InputGroup from "$lib/components/ui/input-group";
+  import * as InputGroup from "$lib/shadcn/input-group";
   import { getUsers } from "$lib/remotes/user.remote";
   import User from "$lib/components/User.svelte";
 

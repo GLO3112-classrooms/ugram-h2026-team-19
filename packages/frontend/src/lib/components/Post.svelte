@@ -1,7 +1,7 @@
 <script lang="ts">
   import { PencilIcon } from "@lucide/svelte";
   import { resolve } from "$app/paths";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$lib/shadcn/button";
   import Avatar from "./Avatar.svelte";
   import type { PostData } from "backend/schemas";
 

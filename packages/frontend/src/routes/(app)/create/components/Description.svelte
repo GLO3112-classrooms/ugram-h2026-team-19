@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import * as Field from "$lib/components/ui/field";
+  import { Label } from "$lib/shadcn/label";
+  import { Textarea } from "$lib/shadcn/textarea";
+  import * as Field from "$lib/shadcn/field";
   import { createPost } from "$lib/remotes/post.remote";
 </script>
 

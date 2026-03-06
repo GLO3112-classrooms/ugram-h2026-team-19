@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AtSignIcon } from "@lucide/svelte";
-  import * as Field from "$lib/components/ui/field/index.js";
-  import * as InputGroup from "$lib/components/ui/input-group";
+  import * as Field from "$lib/shadcn/field/index.js";
+  import * as InputGroup from "$lib/shadcn/input-group";
   import { updatePost } from "$lib/remotes/post.remote";
 
   interface Props {

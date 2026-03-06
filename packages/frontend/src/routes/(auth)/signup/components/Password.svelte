@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Field from "$lib/components/ui/field/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
+  import * as Field from "$lib/shadcn/field/index.js";
+  import { Input } from "$lib/shadcn/input/index.js";
   import { signUp } from "$lib/remotes/auth.remote";
 
   let value: string | undefined = $state(undefined);

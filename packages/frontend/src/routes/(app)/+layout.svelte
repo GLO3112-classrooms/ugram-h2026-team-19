@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as Avatar from "$lib/components/ui/avatar/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import * as Avatar from "$lib/shadcn/avatar/index.js";
+  import { Button } from "$lib/shadcn/button/index.js";
+  import * as Tooltip from "$lib/shadcn/tooltip/index.js";
   import {
     GalleryVerticalEndIcon,
     HouseIcon,

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Input } from "$lib/components/ui/input";
-  import * as InputGroup from "$lib/components/ui/input-group/index.js";
-  import * as Label from "$lib/components/ui/label/index.js";
+  import type { Input } from "$lib/shadcn/input";
+  import * as InputGroup from "$lib/shadcn/input-group/index.js";
+  import * as Label from "$lib/shadcn/label/index.js";
   import { Icon } from "@lucide/svelte";
   import type { ComponentProps } from "svelte";
 

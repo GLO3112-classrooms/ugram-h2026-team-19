@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as Avatar from "$lib/components/ui/avatar/index.js";
-  import { Button } from "$lib/components/ui/button";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Avatar from "$lib/shadcn/avatar/index.js";
+  import { Button } from "$lib/shadcn/button";
+  import * as Dialog from "$lib/shadcn/dialog/index.js";
   import { postAvatar } from "$lib/remotes/user.remote";
   import { PenIcon, TrashIcon, UploadIcon } from "@lucide/svelte";
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { Button } from "$lib/shadcn/button/index.js";
 
   import EditableAvatar from "./components/EditableAvatar.svelte";
   import Email from "./components/Email.svelte";

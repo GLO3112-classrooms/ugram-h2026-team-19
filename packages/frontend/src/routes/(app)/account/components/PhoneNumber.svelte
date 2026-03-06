@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as Field from "$lib/components/ui/field";
+  import * as Field from "$lib/shadcn/field";
   import { patchMe } from "$lib/remotes/user.remote";
   import { PhoneIcon } from "@lucide/svelte";
   import LabeledInputGroup from "$lib/components/LabeledInputGroup.svelte";

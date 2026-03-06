@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import * as Field from "$lib/components/ui/field/index.js";
+  import { Button } from "$lib/shadcn/button/index.js";
+  import * as Field from "$lib/shadcn/field/index.js";
 </script>
 
 <Field.Field>

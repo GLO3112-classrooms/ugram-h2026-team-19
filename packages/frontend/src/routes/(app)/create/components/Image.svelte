@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { Label } from "$lib/components/ui/label/index.js";
-  import * as Field from "$lib/components/ui/field";
+  import { Input } from "$lib/shadcn/input/index.js";
+  import { Label } from "$lib/shadcn/label/index.js";
+  import * as Field from "$lib/shadcn/field";
   import { createPost } from "$lib/remotes/post.remote";
 
   let file = $derived(createPost.fields.image.value());

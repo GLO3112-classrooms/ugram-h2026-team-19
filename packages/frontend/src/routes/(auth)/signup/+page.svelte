@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card/index.js";
-  import * as Field from "$lib/components/ui/field/index.js";
+  import * as Card from "$lib/shadcn/card/index.js";
+  import * as Field from "$lib/shadcn/field/index.js";
 
   import Email from "./components/Email.svelte";
   import Names from "./components/Names.svelte";

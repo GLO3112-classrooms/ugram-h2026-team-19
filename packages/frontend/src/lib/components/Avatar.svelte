@@ -1,6 +1,6 @@
 <script lang="ts">
   import { UserIcon } from "@lucide/svelte";
-  import * as Avatar from "$lib/components/ui/avatar/index.js";
+  import * as Avatar from "$lib/shadcn/avatar/index.js";
 
   interface Props {
     src: string;
