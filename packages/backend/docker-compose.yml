@@ -35,7 +35,7 @@ services:
     ports:
       - "6379:6379"
     env_file:
-      - .env
+      - .env.prod
     volumes:
       - ugram-cache:/data:rw
     networks:

@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -14,6 +15,8 @@ import { CreatedUserDto } from './entities/created-user.js';
 import { JwtService } from '@nestjs/jwt';
 import { UserTokenDto } from './entities/user-token.js';
 import { UserTokenDataDto } from './entities/user-token-data.js';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { type Cache } from 'cache-manager';
 
 /* https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id */
 const OWASP_CONFIGS = [
@@ -31,6 +34,7 @@ export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
+    @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
   ) {}
 
   private static hashPassword(password: string) {
@@ -107,5 +111,20 @@ export class AuthService {
 
   async verifyToken(token: string): Promise<UserTokenDataDto> {
     return await this.jwtService.verifyAsync<UserTokenDataDto>(token);
+  }
+
+  async invalidateToken(
+    token: UserTokenDataDto,
+    rawToken: string,
+  ): Promise<void> {
+    const now = Date.now();
+    const delta = token.exp * 1000 - now;
+    if (0 < delta) {
+      await this.cacheService.set(`loggout-${rawToken}`, '1', delta);
+    }
+  }
+
+  async isTokenInvalidated(rawToken: string) {
+    return (await this.cacheService.get(`loggout-${rawToken}`)) === '1';
   }
 }
