@@ -1,23 +1,16 @@
 import {
   CanActivate,
   ExecutionContext,
-  Inject,
   Injectable,
-  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { AuthService } from '../auth.service.js';
-import { type Cache } from 'cache-manager';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UserTokenDataDto } from '../entities/user-token-data.js';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(
-    private readonly authService: AuthService,
-    @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   private static extractBearerToken(request: FastifyRequest): string {
     const authHeader = request.headers.authorization ?? '';
@@ -31,13 +24,8 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     const token = AuthGuard.extractBearerToken(request);
 
-    let loggoutToken: string | undefined = undefined;
-    try {
-      loggoutToken = await this.cacheService.get(`loggout-${token}`);
-    } catch {
-      throw new InternalServerErrorException();
-    }
-    if (loggoutToken === token) {
+    const isTokenInvalidated = await this.authService.isTokenInvalidated(token);
+    if (isTokenInvalidated) {
       throw new UnauthorizedException();
     }
 
@@ -51,6 +39,11 @@ export class AuthGuard implements CanActivate {
     Object.defineProperty(request, 'user', {
       configurable: true,
       value: payload,
+    });
+
+    Object.defineProperty(request, 'token', {
+      configurable: true,
+      value: token,
     });
     return true;
   }

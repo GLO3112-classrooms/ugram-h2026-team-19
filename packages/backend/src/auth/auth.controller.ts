@@ -1,17 +1,30 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { type FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service.js';
 import { AuthRegisterDto } from './dto/register.dto.js';
 import { CreatedUserDto } from './entities/created-user.js';
 import { AuthLoginDto } from './dto/login.dto.js';
 import { UserTokenDto } from './entities/user-token.js';
+import { AuthGuard } from './guards/jwt.guard.js';
+import { UserTokenDataDto } from './entities/user-token-data.js';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -45,5 +58,22 @@ export class AuthController {
   })
   async login(@Body() body: AuthLoginDto): Promise<UserTokenDto> {
     return await this.authService.login(body);
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({
+    description: 'The bearer token has been invalidated',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You must be logged in before trying to logout',
+  })
+  async logout(@Req() req: FastifyRequest): Promise<void> {
+    const token = req['user'] as UserTokenDataDto;
+    const rawToken = req['token'] as string;
+
+    await this.authService.invalidateToken(token, rawToken);
   }
 }
