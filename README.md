@@ -37,7 +37,7 @@ docker-compose up --build
 
 ## 🧪 Tests
 Pour tester l'application, assurez-vous d'avoir suivi les étapes d'installation de la section précédente.
-Une fois cela fait, vous pourrez vous rendre sur l'adresse indiquée dans votre console (http://localhost:8080)
+Une fois cela fait, vous pourrez vous rendre sur l'adresse indiquée dans votre console (http://127.0.0.1:8080)
 
 - Création de compte (`/signup`)
   - Créez un compte en remplissant les informations du formulaire
