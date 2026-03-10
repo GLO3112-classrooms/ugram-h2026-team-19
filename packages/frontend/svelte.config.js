@@ -6,6 +6,9 @@ const config = {
     adapter: adapter(),
     experimental: {
       remoteFunctions: true
+    },
+    csrf: {
+      trustedOrigins: ["*"]
     }
   },
   compilerOptions: {
