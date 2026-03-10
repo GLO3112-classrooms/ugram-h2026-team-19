@@ -4,7 +4,7 @@
 
   import { updatePost } from "$lib/remotes/post.remote";
   import Logo from "$lib/components/Logo.svelte";
-  import Header from "$lib/components/Header.svelte";
+  import CardHeader from "$lib/components/CardHeader.svelte";
   import Description from "./components/Description.svelte";
   import Keywords from "./components/Keywords.svelte";
   import Mention from "./components/Mention.svelte";
@@ -23,7 +23,10 @@
     <Logo />
     <div class="flex flex-col gap-6">
       <Card.Root>
-        <Header title="Update a post" description="Fill in the form below to update your post" />
+        <CardHeader
+          title="Update a post"
+          description="Fill in the form below to update your post"
+        />
         <Card.Content>
           <form {...updatePost}>
             <Field.Group>
