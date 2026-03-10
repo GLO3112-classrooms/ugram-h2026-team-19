@@ -1,6 +1,6 @@
-import { error, invalid, redirect } from "@sveltejs/kit";
 import { form, getRequestEvent } from "$app/server";
 import { API_URL } from "$env/static/private";
+import { error, invalid, redirect } from "@sveltejs/kit";
 import { authLoginSchema, authRegisterSchema } from "backend/schemas";
 
 export const signUp = form(authRegisterSchema, async (data, issue) => {
@@ -47,4 +47,10 @@ export const signIn = form(authLoginSchema, async (data, issue) => {
     default:
       return error(500, "Something went wrong");
   }
+});
+
+export const signOut = form(async () => {
+  // TODO: API call when implemented
+  getRequestEvent().cookies.delete("token", { path: "/" });
+  redirect(303, "/signin");
 });
