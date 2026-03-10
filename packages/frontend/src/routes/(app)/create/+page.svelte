@@ -4,7 +4,7 @@
 
   import { createPost } from "$lib/remotes/post.remote";
   import Logo from "$lib/components/Logo.svelte";
-  import Header from "$lib/components/Header.svelte";
+  import CardHeader from "$lib/components/CardHeader.svelte";
   import Image from "./components/Image.svelte";
   import Description from "./components/Description.svelte";
   import Keywords from "./components/Keywords.svelte";
@@ -17,7 +17,7 @@
     <Logo />
     <div class="flex flex-col gap-6">
       <Card.Root>
-        <Header title="Create a post" description="Fill in the form below to create a post" />
+        <CardHeader title="Create a post" description="Fill in the form below to create a post" />
         <Card.Content>
           <form {...createPost} enctype="multipart/form-data">
             <Field.Group>
