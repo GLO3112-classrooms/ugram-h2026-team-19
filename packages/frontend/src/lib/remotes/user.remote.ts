@@ -1,4 +1,4 @@
-import { form, getRequestEvent, query } from "$app/server";
+import { command, form, getRequestEvent, query } from "$app/server";
 import { API_URL } from "$env/static/private";
 import { error, redirect } from "@sveltejs/kit";
 import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
@@ -45,6 +45,24 @@ export const patchMe = form(userUpdateDataSchema, async (body) => {
     default:
       return error(500, "Something went wrong");
   }
+});
+
+export const deleteMe = command(async () => {
+  return error(501, "Not implemented yet");
+  /* TODO
+  const response = await fetch(API_URL + `/users/me`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${getRequestEvent().cookies.get("token")}` }
+  });
+
+  switch (response.status) {
+    case 20X:
+      return { success: true };
+    // ...
+    default:
+      return error(500, "Something went wrong");
+  }
+  */
 });
 
 export const getUser = query(z.uuid(), async (id) => {
