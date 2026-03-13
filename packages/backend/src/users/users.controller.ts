@@ -2,7 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -15,6 +18,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiParam,
@@ -114,6 +118,21 @@ export class UsersController {
   ) {
     const token = request['user'] as UserTokenDataDto;
     return await this.usersService.updateMe(token, body);
+  }
+
+  @Delete('/me')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({
+    description: 'The user account was deleted.',
+  })
+  @ApiNotFoundResponse({
+    description:
+      'The user is authenticated but its account was already deleted.',
+  })
+  async deleteMe(@Req() request: FastifyRequest) {
+    const token = request['user'] as UserTokenDataDto;
+    await this.usersService.deleteMe(token);
   }
 
   @Post('me/avatar')

@@ -159,6 +159,55 @@ export class UsersService {
     };
   }
 
+  async deleteMe(token: UserTokenDataDto): Promise<void> {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: token.id,
+      },
+      select: {
+        profilePicture: true,
+      },
+    });
+
+    if (null === user) throw new NotFoundException();
+
+    if (user.profilePicture) {
+      const url = new URL(user.profilePicture);
+      const key = url.pathname.substring('/static/avatars/'.length);
+      await this.s3Service.delete('avatars', key);
+    }
+
+    const posts = await this.prismaService.post.findMany({
+      where: {
+        userId: token.id,
+      },
+      select: {
+        id: true,
+        image: true,
+      },
+    });
+
+    for (const post of posts) {
+      if (post.image) {
+        const url = new URL(post.image);
+        const key = url.pathname.substring('/static/images/'.length);
+        await this.s3Service.delete('images', key);
+      }
+    }
+
+    await this.prismaService.post.deleteMany({
+      where: {
+        userId: token.id,
+      },
+    });
+
+    await this.prismaService.user.delete({
+      where: {
+        id: token.id,
+      },
+    });
+  }
+
   async uploadAvatar(
     token: UserTokenDataDto,
     file: MultipartFile,
