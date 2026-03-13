@@ -1,4 +1,4 @@
-import { form, getRequestEvent, query } from "$app/server";
+import { command, form, getRequestEvent, query } from "$app/server";
 import { API_URL } from "$env/static/private";
 import { error, redirect } from "@sveltejs/kit";
 import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
@@ -42,6 +42,27 @@ export const patchMe = form(userUpdateDataSchema, async (body) => {
       return error(400, "Malformed body");
     case 401:
       return redirect(303, "/signin");
+    default:
+      return error(500, "Something went wrong");
+  }
+});
+
+export const deleteMe = command(async () => {
+  const { cookies } = getRequestEvent();
+
+  const response = await fetch(API_URL + `/users/me`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${cookies.get("token")}` }
+  });
+
+  switch (response.status) {
+    case 204:
+      cookies.delete("token", { path: "/" });
+      return { success: true };
+    case 401:
+      return { success: false };
+    // 404 is not intended to happen here, so we treat it as unexpected error
+    case 404:
     default:
       return error(500, "Something went wrong");
   }
