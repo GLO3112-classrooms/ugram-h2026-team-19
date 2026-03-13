@@ -4,6 +4,7 @@ on: [push, delete]
 
 jobs:
   to_github:
+    if: github.repository == 'Ximaz/ugram'
     runs-on: ubuntu-latest
 
     environment: Mirror
