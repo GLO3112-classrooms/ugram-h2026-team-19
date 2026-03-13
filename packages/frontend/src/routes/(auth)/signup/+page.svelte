@@ -76,6 +76,7 @@
               <FieldInput
                 required
                 label="confirm password"
+                type="password"
                 aria-invalid={signUp.fields.password.value() !== value}
               />
             </Field.Field>
