@@ -87,13 +87,21 @@ export class PostsService {
 
   async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
     const posts = await this.prismaService.post.findMany({
-      where: fromUserID
-        ? {
-            user: {
-              id: fromUserID,
-            },
-          }
-        : undefined,
+      where: {
+        ...(fromUserID ? { user: { id: fromUserID } } : {}),
+        ...(query.description
+          ? {
+              description: { contains: query.description, mode: 'insensitive' },
+            }
+          : {}),
+        ...(query.keywords
+          ? {
+              keywords: {
+                hasEvery: query.keywords.split(',').map((k) => k.trim()),
+              },
+            }
+          : {}),
+      },
       select: {
         id: true,
         description: true,
@@ -115,7 +123,21 @@ export class PostsService {
     });
 
     const total = await this.prismaService.post.count({
-      where: fromUserID ? { user: { id: fromUserID } } : undefined,
+      where: {
+        ...(fromUserID ? { user: { id: fromUserID } } : {}),
+        ...(query.description
+          ? {
+              description: { contains: query.description, mode: 'insensitive' },
+            }
+          : {}),
+        ...(query.keywords
+          ? {
+              keywords: {
+                hasEvery: query.keywords.split(',').map((k) => k.trim()),
+              },
+            }
+          : {}),
+      },
     });
 
     const refinedPosts = await Promise.all(
@@ -297,6 +319,22 @@ export class PostsService {
 
     if (token.id !== postAuthor.user.id) {
       throw new ForbiddenException();
+    }
+
+    // Delete the image from S3 if it exists
+    const post = await this.prismaService.post.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        image: true,
+      },
+    });
+
+    if (post?.image) {
+      const url = new URL(post.image);
+      const imageKey = url.pathname.substring('/static/images/'.length);
+      await this.s3Service.delete('images', imageKey);
     }
 
     await this.prismaService.post.delete({
