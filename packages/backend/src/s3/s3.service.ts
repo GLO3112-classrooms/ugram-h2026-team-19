@@ -288,7 +288,9 @@ export class S3Service {
       );
     } catch (e) {
       if (e instanceof NoSuchKey || e instanceof NotFound) {
-        return;
+        throw new NotFoundException(
+          `Unable to find the document. (loc: ${bucket}/${key})`,
+        );
       }
       throw e;
     }
