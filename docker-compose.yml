@@ -36,6 +36,9 @@ services:
     build:
       context: .
       dockerfile: ./packages/backend/Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: ugram-backend
     ports:
       - "3000:3000"

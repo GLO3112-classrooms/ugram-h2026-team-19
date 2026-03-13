@@ -31,9 +31,6 @@ RUN rm -rf src tsconfig.json tsconfig.build.json nest-cli.json
 
 RUN pnpm deploy --filter=backend --prod --legacy /prod-app
 
-RUN wget https://gobinaries.com/tj/node-prune --output-document - | /bin/sh && \
-    node-prune /prod-app/node_modules
-
 FROM node:24.13.0-alpine3.23 AS app
 
 WORKDIR /app/
