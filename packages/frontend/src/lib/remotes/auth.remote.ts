@@ -18,7 +18,10 @@ export const signUp = form(authRegisterSchema, async (data, issue) => {
     case 400:
       return invalid(...(await response.json()).errors);
     case 409:
-      return invalid(issue.email("Email is already taken"));
+      return invalid(
+        issue.username("Username or email is already taken"),
+        issue.email("Username or email is already taken")
+      );
     default:
       return error(500, "Something went wrong");
   }

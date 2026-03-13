@@ -1,4 +1,5 @@
 import z from 'zod';
+import { PHONE_NUMBER_REGEX } from '../../constants.js';
 
 export const authRegisterSchema = z.object({
   email: z.email().meta({
@@ -16,9 +17,12 @@ export const authRegisterSchema = z.object({
   lastname: z.string().meta({
     description: 'The user lastname',
   }),
-  phoneNumber: z.string().meta({
-    description: 'The user phone number',
-  }),
+  phoneNumber: z
+    .string()
+    .regex(PHONE_NUMBER_REGEX, { error: 'Invalid phone number' })
+    .meta({
+      description: 'The user phone number',
+    }),
 });
 
 export type AuthRegister = z.infer<typeof authRegisterSchema>;
