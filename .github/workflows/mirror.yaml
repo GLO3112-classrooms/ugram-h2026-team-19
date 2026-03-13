@@ -5,6 +5,9 @@ on: [push, delete]
 jobs:
   to_github:
     runs-on: ubuntu-latest
+
+    environment: Mirror
+
     steps:
       - uses: actions/checkout@v6.0.2
         with:
