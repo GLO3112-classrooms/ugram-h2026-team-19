@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - ci/frontend/ghcr
     paths:
       - "packages/frontend/**"
   pull_request:
