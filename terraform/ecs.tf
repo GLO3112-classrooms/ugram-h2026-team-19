@@ -60,7 +60,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode([
     {
       name  = "backend"
-      image = "ghcr.io/Ximaz/ugram/backend"
+      image = "ghcr.io/ximaz/ugram/backend:sha-4bad8ae"
 
       repositoryCredentials = {
         credentialsParameter = aws_secretsmanager_secret.ghcr.arn
@@ -86,8 +86,6 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "S3_ACCESS_KEY_ID", value = aws_iam_access_key.s3_key.id },
         { name = "S3_SECRET_ACCESS_KEY", value = aws_iam_access_key.s3_key.secret },
         { name = "S3_ENDPOINT", value = aws_s3_bucket.app_bucket.bucket_regional_domain_name },
-
-        { name = "REDIS_HOST", value = aws_elasticache_cluster.redis.cache_nodes[0].address },
 
         { name = "JWT_SECRET", value = var.jwt_secret },
         { name = "JWT_EXPIRES_IN", value = var.jwt_expires_in },
@@ -192,7 +190,7 @@ resource "aws_ecs_service" "backend" {
 
   network_configuration {
     assign_public_ip = false
-    subnets          = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+    subnets          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
     security_groups  = [aws_security_group.ecs.id]
   }
 

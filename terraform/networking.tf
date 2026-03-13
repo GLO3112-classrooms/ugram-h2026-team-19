@@ -1,5 +1,9 @@
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+
+
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 }
 
 resource "aws_internet_gateway" "main" {
@@ -76,4 +80,33 @@ resource "aws_route" "private_nat" {
   route_table_id         = aws_route_table.private.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.main.id
+}
+
+resource "aws_security_group" "sm_endpoint" {
+  name        = "sm-endpoint-sg"
+  description = "Allow ECS tasks to talk to Secrets Manager"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-1.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  security_group_ids  = [aws_security_group.sm_endpoint.id]
+  private_dns_enabled = true
 }
