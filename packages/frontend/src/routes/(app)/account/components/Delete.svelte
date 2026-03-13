@@ -8,9 +8,8 @@
 
   async function handleDelete() {
     try {
-      const { success } = await deleteMe();
-      if (success) await goto(resolve("/signin"));
-      else error = "Unable to delete account";
+      await deleteMe();
+      await goto(resolve("/signin"));
     } catch {
       error = "Unable to delete account";
     }

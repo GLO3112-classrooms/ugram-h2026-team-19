@@ -48,21 +48,24 @@ export const patchMe = form(userUpdateDataSchema, async (body) => {
 });
 
 export const deleteMe = command(async () => {
-  return error(501, "Not implemented yet");
-  /* TODO
+  const { cookies } = getRequestEvent();
+
   const response = await fetch(API_URL + `/users/me`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getRequestEvent().cookies.get("token")}` }
+    headers: { Authorization: `Bearer ${cookies.get("token")}` }
   });
 
   switch (response.status) {
-    case 20X:
+    case 204:
+      cookies.delete("token", { path: "/" });
       return { success: true };
-    // ...
+    case 401:
+      return { success: false };
+    // 404 is not intended to happen here, so we treat it as unexpected error
+    case 404:
     default:
       return error(500, "Something went wrong");
   }
-  */
 });
 
 export const getUser = query(z.uuid(), async (id) => {
