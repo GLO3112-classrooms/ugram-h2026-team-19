@@ -9,7 +9,8 @@ jobs:
       - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
-      - uses: ximaz/ximaz-repo-mirror@v1.0.0
+
+      - uses: ximaz/ximaz-repo-mirror@1.0.0
         with:
           target_repo_url:
             git@github.com:GLO3112-classrooms/ugram-h2026-team-19.git

@@ -60,9 +60,12 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode([
     {
       name  = "backend"
-      image = "237614677978.dkr.ecr.us-east-1.amazonaws.com/nestjs-backend"
+      image = "ghcr.io/Ximaz/ugram/backend"
 
-      repositoryCredentials = null
+      repositoryCredentials = {
+        credentialsParameter = aws_secretsmanager_secret.ghcr.arn
+      }
+
 
       portMappings = [{
         containerPort = 3000
