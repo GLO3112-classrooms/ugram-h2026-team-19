@@ -11,6 +11,7 @@ import {
   CompleteMultipartUploadCommand,
   AbortMultipartUploadCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
   BucketAlreadyOwnedByYou,
   NotFound,
   NoSuchBucket,
@@ -270,6 +271,28 @@ export class S3Service {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  async delete(parent: string, filename: string): Promise<void> {
+    const [bucket, ...keyFragments] = parent.split(/\//g);
+
+    const key = path.join(...keyFragments, filename);
+
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: bucket,
+          Key: key,
+        }),
+      );
+    } catch (e) {
+      if (e instanceof NoSuchKey || e instanceof NotFound) {
+        throw new NotFoundException(
+          `Unable to find the document. (loc: ${bucket}/${key})`,
+        );
+      }
+      throw e;
     }
   }
 }

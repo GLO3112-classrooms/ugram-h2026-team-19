@@ -321,6 +321,22 @@ export class PostsService {
       throw new ForbiddenException();
     }
 
+    // Delete the image from S3 if it exists
+    const post = await this.prismaService.post.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        image: true,
+      },
+    });
+
+    if (post?.image) {
+      const url = new URL(post.image);
+      const imageKey = url.pathname.substring('/static/images/'.length);
+      await this.s3Service.delete('images', imageKey);
+    }
+
     await this.prismaService.post.delete({
       where: {
         id: id,
