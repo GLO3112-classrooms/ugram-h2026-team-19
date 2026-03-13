@@ -7,6 +7,7 @@
   import type { NavigationBar } from "../../Navbar.svelte";
   import { Skeleton } from "$lib/shadcn/skeleton";
   import { getMe } from "$lib/remotes/user.remote";
+  import { signOut } from "$lib/remotes/auth.remote";
 
   type Props = NavigationBar["footer"];
 </script>
@@ -69,10 +70,14 @@
 
           <DropdownMenu.Separator />
 
-          <DropdownMenu.Item class="cursor-pointer" variant="destructive" disabled>
-            <LogOutIcon />
-            Log out
-          </DropdownMenu.Item>
+          <form {...signOut.for("sidebar-footer")}>
+            <button class="w-full">
+              <DropdownMenu.Item class="cursor-pointer" variant="destructive">
+                <LogOutIcon />
+                Sign out
+              </DropdownMenu.Item>
+            </button>
+          </form>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </Sidebar.MenuItem>
