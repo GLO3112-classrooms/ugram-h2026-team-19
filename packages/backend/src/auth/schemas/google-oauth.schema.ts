@@ -15,7 +15,7 @@ export const googleAuthTokenSchema = z.object({
   }),
   id_token: z.string().meta({
     description: 'The id of the token',
-  })
+  }),
 });
 
 export type GoogleAuthToken = z.infer<typeof googleAuthTokenSchema>;
