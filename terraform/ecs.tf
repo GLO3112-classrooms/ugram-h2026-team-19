@@ -60,7 +60,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode([
     {
       name  = "backend"
-      image = "ghcr.io/ximaz/ugram/backend:sha-4bad8ae"
+      image = "ghcr.io/ximaz/ugram/backend:latest"
 
       repositoryCredentials = {
         credentialsParameter = aws_secretsmanager_secret.ghcr.arn
