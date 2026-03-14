@@ -21,8 +21,8 @@
             <h2 class="text-2xl">@{username}</h2>
             <p class="text-sm text-muted-foreground">
               Member since {new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
-                    new Date(createdAt)
-            )}
+                new Date(createdAt)
+              )}
             </p>
           </div>
         </div>
