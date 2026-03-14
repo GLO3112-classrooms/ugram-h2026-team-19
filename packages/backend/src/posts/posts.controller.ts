@@ -33,7 +33,10 @@ import { type FastifyRequest } from 'fastify';
 import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
 import { PostCreateDto } from './dto/create-post.dto.js';
 import { CreatedPostDto } from './entities/created-post.js';
-import { postImageUploadSchema } from './schemas/post-image-upload.schema.js';
+import {
+  postImageUploadSchema,
+  POST_IMAGE_UPLOAD_MAX_SIZE,
+} from './schemas/post-image-upload.schema.js';
 import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { type UUID } from 'node:crypto';
 import { UserTokenData } from '../index.schema.js';
@@ -155,7 +158,9 @@ export class PostsController {
   })
   async uploadImage(@Req() request: FastifyRequest, @Param('id') id: UUID) {
     const token = request['user'] as UserTokenData;
-    const file = await request.file();
+    const file = await request.file({
+      limits: { fileSize: POST_IMAGE_UPLOAD_MAX_SIZE },
+    });
 
     if (undefined === file) {
       throw new BadRequestException();
