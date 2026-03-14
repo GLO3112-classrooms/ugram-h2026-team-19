@@ -45,7 +45,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 
 resource "aws_cloudwatch_log_group" "nestjs_backend" {
   name              = "/ecs/nestjs-backend"
-  retention_in_days = 3
+  retention_in_days = 0
 }
 
 resource "aws_ecs_task_definition" "backend" {
