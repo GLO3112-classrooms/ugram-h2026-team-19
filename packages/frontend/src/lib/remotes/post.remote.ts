@@ -166,9 +166,10 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
       return invalid(...(await response.json()).errors);
     case 401:
       return redirect(303, "/signin");
-    // 403 and 404 are not intended to happen here, so we treat them as unexpected errors
     case 403:
+      return invalid(issue.id("You don't have permission to edit this post"));
     case 404:
+      return invalid(issue.id("Post not found"));
     default:
       return error(500, "Something went wrong");
   }
@@ -185,12 +186,13 @@ export const deletePost = command(z.uuid(), async (id) => {
 
   switch (response.status) {
     case 204:
-      return { success: true };
+      return { success: true, redirect: "/" } as const;
     case 401:
-      return { success: false };
-    // 403 and 404 are not intended to happen here, so we treat them as unexpected errors
+      return { success: false, redirect: "/signin" } as const;
     case 403:
+      return { success: false, message: "You don't have permission to delete this post" } as const;
     case 404:
+      return { success: false, message: "Post not found" } as const;
     default:
       return error(500, "Something went wrong");
   }
