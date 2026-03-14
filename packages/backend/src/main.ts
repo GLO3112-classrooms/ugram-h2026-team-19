@@ -16,6 +16,16 @@ import {
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import fastifyCompress from '@fastify/compress';
 
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import { FastifyReply, FastifyRequest } from 'fastify';
+
 const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
   new DocumentBuilder()
     .setTitle('Ugram API Documentation')
@@ -40,6 +50,46 @@ const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
     )
     .build();
 
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+
+    const request = ctx.getRequest<FastifyRequest>();
+    const response = ctx.getResponse<FastifyReply>();
+
+    if (request.url === '/favicon.ico') {
+      response.status(404).send(); // backend has no favicon to return
+      return;
+    }
+
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+
+      this.logger.error(exception.message, exception.stack);
+
+      response.status(status).send({
+        statusCode: status,
+        message: exception.message,
+      });
+
+      return;
+    }
+
+    this.logger.error(
+      `Unhandled exception on ${request.method} ${request.url}`,
+      exception instanceof Error ? exception.stack : JSON.stringify(exception),
+    );
+
+    response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -47,6 +97,8 @@ async function bootstrap() {
   );
 
   app.useGlobalPipes(new ZodValidationPipe());
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.enableCors({
     origin: '*',
@@ -77,3 +129,11 @@ async function bootstrap() {
 }
 
 bootstrap().catch(console.error);
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection:', err);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});

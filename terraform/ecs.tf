@@ -160,7 +160,7 @@ resource "aws_lb_target_group" "backend" {
   vpc_id      = aws_vpc.main.id
 
   health_check {
-    path                = "/openapi"
+    path                = "/health"
     protocol            = "HTTP"
     port                = "traffic-port"
     interval            = 30
