@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { PUBLIC_API_URL } from "$env/static/public";
   import { resolve } from "$app/paths";
-  import { getGoogleAuthURL, signIn } from "$lib/remotes/auth.remote";
+  import { signIn } from "$lib/remotes/auth.remote";
 
   import * as Card from "$lib/shadcn/card/index.js";
   import * as Field from "$lib/shadcn/field/index.js";
@@ -11,7 +12,7 @@
   import LabeledInput from "$lib/components/fields/FieldInput.svelte";
 
   async function handleGoogleAuth() {
-    window.location.href = await getGoogleAuthURL();
+    window.location.href = PUBLIC_API_URL + "/auth/google";
   }
 </script>
 
