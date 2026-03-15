@@ -1,5 +1,5 @@
 import { command, form, getRequestEvent, query } from "$app/server";
-import { API_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { error, redirect } from "@sveltejs/kit";
 import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
 import { z } from "zod";
@@ -8,7 +8,7 @@ export const getMe = query(async (): Promise<UserData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(API_URL + "/users/me", {
+  const response = await fetch(env.API_URL + "/users/me", {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -26,7 +26,7 @@ export const getMe = query(async (): Promise<UserData> => {
 export const patchMe = form(userUpdateDataSchema, async (body) => {
   const token = getRequestEvent().cookies.get("token");
 
-  const response = await fetch(`${API_URL}/users/me`, {
+  const response = await fetch(`${env.API_URL}/users/me`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -50,7 +50,7 @@ export const patchMe = form(userUpdateDataSchema, async (body) => {
 export const deleteMe = command(async () => {
   const { cookies } = getRequestEvent();
 
-  const response = await fetch(API_URL + `/users/me`, {
+  const response = await fetch(env.API_URL + `/users/me`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${cookies.get("token")}` }
   });
@@ -72,7 +72,7 @@ export const getUser = query(z.uuid(), async (id) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(API_URL + `/users/${id}`, {
+  const response = await fetch(env.API_URL + `/users/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -99,7 +99,7 @@ export const getUsers = query(
     const token = cookies.get("token");
 
     const response = await fetch(
-      `${API_URL}/users?${new URLSearchParams({ search, limit: limit.toString(), skip: skip.toString() })}`,
+      `${env.API_URL}/users?${new URLSearchParams({ search, limit: limit.toString(), skip: skip.toString() })}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -120,7 +120,7 @@ export const postAvatar = form(userAvatarUploadSchema, async ({ avatar }) => {
   const body = new FormData();
   body.append("avatar", avatar);
 
-  const response = await fetch(`${API_URL}/users/me/avatar`, {
+  const response = await fetch(`${env.API_URL}/users/me/avatar`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`
