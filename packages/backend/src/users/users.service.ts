@@ -228,17 +228,16 @@ export class UsersService {
     });
     const uploadStream = file.file.pipe(sizeValidator);
 
-    await this.s3Service.createBucket('avatars');
-
-    const filename = path.join(token.id, file.filename);
+    const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
+    const key = path.join(token.id, sanitizedFilename);
     await this.s3Service.pushMultipart(
       'avatars',
-      filename,
+      key,
       uploadStream,
       file.mimetype,
     );
-    const staticAvatarUrl = `${this.staticService.getStaticOrigin()}/static/avatars/${filename}`;
 
+    const staticAvatarUrl = `${this.staticService.getStaticOrigin()}/static/images/${token.id}/${sanitizedFilename}`;
     await this.prismaService.user.update({
       where: {
         id: token.id,

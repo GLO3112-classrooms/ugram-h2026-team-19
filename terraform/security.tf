@@ -14,8 +14,8 @@ resource "aws_security_group" "postgres" {
 }
 
 resource "aws_security_group" "redis" {
-  name        = "redis-sg"
-  vpc_id      = aws_vpc.main.id
+  name   = "redis-sg"
+  vpc_id = aws_vpc.main.id
 
   ingress {
     from_port       = 6379

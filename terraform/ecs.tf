@@ -77,20 +77,28 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "POSTGRES_DB", value = var.postgres_db },
         { name = "PGHOST", value = aws_db_instance.postgres.address },
         {
-          name  = "DATABASE_URL"
-          value = "postgresql://${var.postgres_user}:${var.postgres_password}@${aws_db_instance.postgres.address}:5432/${var.postgres_db}"
+          name  = "DATABASE_URL",
+          value = "postgresql://${var.postgres_user}:${var.postgres_password}@${aws_db_instance.postgres.address}:5432/${var.postgres_db}?sslmode=verify-full&sslrootcert=/certs/global-bundle.pem"
         },
 
         { name = "REDIS_HOST", value = aws_elasticache_cluster.redis.cache_nodes[0].address },
 
         { name = "S3_ACCESS_KEY_ID", value = aws_iam_access_key.s3_key.id },
         { name = "S3_SECRET_ACCESS_KEY", value = aws_iam_access_key.s3_key.secret },
-        { name = "S3_ENDPOINT", value = aws_s3_bucket.app_bucket.bucket_regional_domain_name },
+        { name = "S3_ENDPOINT", value = "https://s3.${aws_s3_bucket.app_bucket.region}.amazonaws.com" },
+        {
+          name  = "S3_REGION",
+          value = aws_s3_bucket.app_bucket.region
+        },
+        {
+          name  = "S3_BUCKET",
+          value = aws_s3_bucket.app_bucket.bucket
+        },
 
         { name = "JWT_SECRET", value = var.jwt_secret },
         { name = "JWT_EXPIRES_IN", value = var.jwt_expires_in },
 
-        { name = "STATIC_ORIGIN", value = var.static_origin }
+        { name = "STATIC_ORIGIN", value = "http://${aws_lb.backend.dns_name}" }
       ],
 
       logConfiguration = {
@@ -162,11 +170,11 @@ resource "aws_lb_target_group" "backend" {
   health_check {
     path                = "/health"
     protocol            = "HTTP"
-    port                = "traffic-port"
-    interval            = 30
+    interval            = 10
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
+    matcher             = "200-299"
   }
 }
 
@@ -198,6 +206,10 @@ resource "aws_ecs_service" "backend" {
     target_group_arn = aws_lb_target_group.backend.arn
     container_name   = "backend"
     container_port   = 3000
+  }
+
+  deployment_controller {
+    type = "ECS"
   }
 
   depends_on = [aws_lb_listener.backend]

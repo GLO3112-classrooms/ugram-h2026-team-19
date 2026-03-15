@@ -11,10 +11,10 @@ plan:
 	terraform plan -out=$(PLAN_FILE)
 
 apply: $(PLAN_FILE)
-	terraform apply $(PLAN_FILE)
+	time terraform apply $(PLAN_FILE)
 
 destroy:
-	terraform destroy
+	time terraform destroy
 
 validate:
 	terraform validate

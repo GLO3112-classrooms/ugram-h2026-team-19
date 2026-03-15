@@ -14,6 +14,7 @@ export class StaticService {
   }
 
   async fetchFile(bucket: string, key: string) {
-    return await this.s3Service.pull(bucket, key);
+    const absoluteBucket = this.configService.getOrThrow<string>('S3_BUCKET');
+    return await this.s3Service.pull(absoluteBucket, `${bucket}/${key}`);
   }
 }
