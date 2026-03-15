@@ -4,7 +4,7 @@ export const authLoginSchema = z.object({
   email: z.email().meta({
     description: 'The user email',
   }),
-  password: z.string().meta({
+  password: z.string().nonempty().meta({
     description: 'The user password',
   }),
 });
