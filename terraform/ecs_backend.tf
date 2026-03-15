@@ -9,8 +9,8 @@ resource "aws_security_group" "ecs" {
 
   ingress {
     description     = "Allow ALB traffic"
-    from_port       = 3000
-    to_port         = 3000
+    from_port       = 8080
+    to_port         = 8080
     protocol        = "tcp"
     security_groups = [aws_security_group.lb.id] # allow ALB SG
   }
@@ -68,7 +68,7 @@ resource "aws_ecs_task_definition" "backend" {
 
 
       portMappings = [{
-        containerPort = 3000
+        containerPort = 8080
       }]
 
       environment = [
@@ -164,7 +164,7 @@ resource "aws_lb" "backend" {
 
 resource "aws_lb_target_group" "backend" {
   name        = "backend-tg"
-  port        = 3000
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.main.id
@@ -207,7 +207,7 @@ resource "aws_ecs_service" "backend" {
   load_balancer {
     target_group_arn = aws_lb_target_group.backend.arn
     container_name   = "backend"
-    container_port   = 3000
+    container_port   = 8080
   }
 
   deployment_controller {
