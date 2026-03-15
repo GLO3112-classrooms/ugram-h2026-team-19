@@ -212,7 +212,7 @@ export class AuthService {
         data: {
           email: profile.email,
           username: profile.name,
-          firstname: profile.name,
+          firstname: profile.given_name,
           lastname: profile.family_name,
         },
       });
