@@ -5,7 +5,8 @@ import {
   postCreateSchema,
   type PostData,
   type PostDataList,
-  postImageUploadSchema
+  postImageUploadSchema,
+  getPostsQuerySchema
 } from "backend/schemas";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { getUsers } from "$lib/remotes/user.remote";
@@ -104,18 +105,18 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
 });
 
 export const getPosts = query(
-  z.object({
-    userId: z.uuid().optional(),
-    skip: z.number().optional().default(0)
-  }),
-  async ({ userId, skip }): Promise<PostDataList> => {
+  getPostsQuerySchema.extend({ userId: z.uuid().optional() }),
+  async ({ userId, skip, limit, description, keywords }): Promise<PostDataList> => {
     const { cookies } = getRequestEvent();
     const token = cookies.get("token");
 
-    const response = await fetch(
-      API_URL + (userId ? `/posts/list/${userId}?skip=${skip}` : `/posts/list?skip=${skip}`),
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const url = new URL(userId ? `/posts/list/${userId}` : "/posts/list", API_URL);
+    url.searchParams.append("skip", skip.toString());
+    url.searchParams.append("limit", limit.toString());
+    if (description) url.searchParams.append("description", description);
+    if (keywords) url.searchParams.append("keywords", keywords);
+
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
     switch (response.status) {
       case 200:
