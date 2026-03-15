@@ -64,7 +64,7 @@
   });
 </script>
 
-<div class="mx-auto w-xs p-3 md:w-3xl md:p-7">
+<div>
   <User {...user} />
   <Separator class="my-5" />
   <div class="grid grid-cols-3 gap-1 pt-2">

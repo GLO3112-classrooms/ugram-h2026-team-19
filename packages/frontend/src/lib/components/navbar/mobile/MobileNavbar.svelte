@@ -15,7 +15,7 @@
 </script>
 
 <div
-  class="fixed bottom-0 flex h-18 w-screen items-center justify-around border-t bg-background *:size-full *:place-items-center *:content-center"
+  class="fixed bottom-0 z-50 flex h-18 w-screen items-center justify-around border-t bg-background *:size-full *:place-items-center *:content-center"
 >
   {#each content as { label, icon, url } (label)}
     {@const Icon = icon}
@@ -38,6 +38,6 @@
   </a>
 </div>
 
-<main class="flex w-full flex-1 flex-col bg-background">
+<main class="mx-auto mb-18 flex w-full max-w-lg flex-1 flex-col bg-background p-2">
   {@render children()}
 </main>
