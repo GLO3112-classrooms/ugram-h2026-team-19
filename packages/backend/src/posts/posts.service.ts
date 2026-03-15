@@ -236,17 +236,16 @@ export class PostsService {
     });
     const uploadStream = file.file.pipe(sizeValidator);
 
-    await this.s3Service.createBucket('images');
-
-    const filename = path.join(postId, file.filename);
+    const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
+    const key = path.join('images', postId, sanitizedFilename);
     await this.s3Service.pushMultipart(
-      'images',
-      filename,
+      this.staticService.getBucket(),
+      key,
       uploadStream,
       file.mimetype,
     );
-    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/images/${filename}`;
 
+    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/${key}`;
     await this.prismaService.post.update({
       where: {
         id: postId,

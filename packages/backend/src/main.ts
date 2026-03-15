@@ -25,6 +25,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { ConfigService } from '@nestjs/config';
 
 const getSwaggerDocumentConfig = (): Omit<OpenAPIObject, 'paths'> =>
   new DocumentBuilder()
@@ -124,6 +125,16 @@ async function bootstrap() {
     customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
   };
   SwaggerModule.setup('/openapi', app, document, swaggerConfig);
+
+  const configService = app.get(ConfigService);
+
+  const STATIC_ORIGIN = configService.getOrThrow<string>('STATIC_ORIGIN');
+  const S3_ENDPOINT = configService.getOrThrow<string>('S3_ENDPOINT');
+  const DATABASE_URL = configService.getOrThrow<string>('DATABASE_URL');
+
+  console.log(`Static Origin : ${STATIC_ORIGIN}`);
+  console.log(`S3 Endpoint   : ${S3_ENDPOINT}`);
+  console.log(`Database URL  : ${DATABASE_URL}`);
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }

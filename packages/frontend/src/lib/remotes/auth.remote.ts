@@ -1,10 +1,10 @@
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { form, getRequestEvent } from "$app/server";
-import { API_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { authLoginSchema, authRegisterSchema } from "backend/schemas";
 
 export const signUp = form(authRegisterSchema, async (data, issue) => {
-  const response = await fetch(API_URL + "/auth/register", {
+  const response = await fetch(env.API_URL + "/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -28,7 +28,7 @@ export const signUp = form(authRegisterSchema, async (data, issue) => {
 });
 
 export const signIn = form(authLoginSchema, async (data, issue) => {
-  const response = await fetch(API_URL + "/auth/login", {
+  const response = await fetch(env.API_URL + "/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -55,7 +55,7 @@ export const signIn = form(authLoginSchema, async (data, issue) => {
 export const signOut = form(async () => {
   const { cookies } = getRequestEvent();
 
-  const response = await fetch(API_URL + "/auth/logout", {
+  const response = await fetch(env.API_URL + "/auth/logout", {
     method: "POST",
     headers: { Authorization: `Bearer ${cookies.get("token")}` }
   });

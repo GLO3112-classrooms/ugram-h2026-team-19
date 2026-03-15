@@ -70,15 +70,14 @@ services:
     build:
       context: .
       dockerfile: ./packages/frontend/Dockerfile
-      args:
-        - API_URL=http://backend:3000
-        - PUBLIC_API_URL=${STATIC_ORIGIN}
     container_name: ugram-frontend
     ports:
       - "8080:8080"
     env_file:
       - .env
     environment:
+      - API_URL=http://backend:3000
+      - PUBLIC_API_URL=${STATIC_ORIGIN}
       - ORIGIN=${FRONTEND_ORIGIN}
       - BODY_SIZE_LIMIT=50M
     networks:

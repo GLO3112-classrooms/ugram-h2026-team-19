@@ -15,7 +15,7 @@
     "start": "dotenv -e .env.dev -- nest start",
     "start:dev": "dotenv -e .env.dev -- nest start --watch",
     "start:debug": "dotenv -e .env.dev -- nest start --debug --watch",
-    "start:prod": "prisma migrate deploy && node dist/src/main",
+    "start:prod": "node dist/src/main",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -24,14 +24,14 @@
     "prisma:reset": "dotenv -e .env.dev -- prisma migrate reset",
     "prisma:migrate": "dotenv -e .env.dev -- prisma migrate dev",
     "prisma:generate": "DATABASE_URL=postgres://null:null@null:5432/null prisma generate",
-    "prisma:deploy": "dotenv -e .env.dev -- prisma migrate deploy",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "dotenv -e .env.dev -- prisma studio"
   },
   "exports": {
     "./schemas": "./src/index.schema.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1004.0",
+    "@aws-sdk/client-s3": "^3.1009.0",
     "@fastify/compress": "^8.3.1",
     "@fastify/multipart": "^9.4.0",
     "@fastify/static": "^9.0.0",

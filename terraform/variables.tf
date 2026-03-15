@@ -35,8 +35,3 @@ variable "jwt_expires_in" {
   type        = string
   description = "The time to live for a JWT token (ex: 12h, 1d, ...)"
 }
-
-variable "static_origin" {
-  type        = string
-  description = "The static origin used by the backend to compute static media URL"
-}
