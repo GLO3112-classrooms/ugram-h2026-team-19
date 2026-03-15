@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PUBLIC_API_URL } from "$env/static/public";
+  import { env } from "$env/dynamic/public";
   import { resolve } from "$app/paths";
   import { signIn } from "$lib/remotes/auth.remote";
 
@@ -12,7 +12,7 @@
   import LabeledInput from "$lib/components/fields/FieldInput.svelte";
 
   async function handleGoogleAuth() {
-    window.location.href = PUBLIC_API_URL + "/auth/google";
+    window.location.href = env.PUBLIC_API_URL + "/auth/google";
   }
 </script>
 

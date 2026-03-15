@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { query, form, getRequestEvent, command } from "$app/server";
-import { API_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import {
   postCreateSchema,
   type PostData,
@@ -30,7 +30,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   const mention = data.mention ? await getMentionId(data.mention) : null;
   if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
-  let response = await fetch(API_URL + "/posts", {
+  let response = await fetch(env.API_URL + "/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   const formData = new FormData();
   formData.append("image", data.image);
 
-  response = await fetch(API_URL + `/posts/${id}/image`, {
+  response = await fetch(env.API_URL + `/posts/${id}/image`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formData
@@ -87,7 +87,7 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(API_URL + `/posts/${id}`, {
+  const response = await fetch(env.API_URL + `/posts/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -113,7 +113,7 @@ export const getPosts = query(
     const token = cookies.get("token");
 
     const response = await fetch(
-      API_URL + (userId ? `/posts/list/${userId}?skip=${skip}` : `/posts/list?skip=${skip}`),
+      env.API_URL + (userId ? `/posts/list/${userId}?skip=${skip}` : `/posts/list?skip=${skip}`),
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -142,7 +142,7 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
   const mention = data.mention ? await getMentionId(data.mention) : null;
   if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
-  const response = await fetch(API_URL + `/posts/${data.id}`, {
+  const response = await fetch(env.API_URL + `/posts/${data.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -179,7 +179,7 @@ export const deletePost = command(z.uuid(), async (id) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(API_URL + `/posts/${id}`, {
+  const response = await fetch(env.API_URL + `/posts/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` }
   });
