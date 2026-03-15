@@ -1,15 +1,15 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { Separator } from "$lib/shadcn/separator";
-  import { getUser } from "$lib/remotes/user.remote";
   import User from "$lib/components/User.svelte";
-  import type { PostData } from "backend/schemas";
   import { getPosts } from "$lib/remotes/post.remote";
+  import { getMe, getUser } from "$lib/remotes/user.remote";
+  import { Separator } from "$lib/shadcn/separator";
+  import type { PostData } from "backend/schemas";
   import { onMount } from "svelte";
 
   let { params } = $props();
 
-  const user = $derived(await getUser(params.user_id));
+  const user = $derived(params.user_id === "me" ? await getMe() : await getUser(params.user_id));
 
   let posts = $state<PostData[]>([]);
   let loading = $state(false);
@@ -64,7 +64,7 @@
   });
 </script>
 
-<div class="mx-auto w-xs p-3 md:w-3xl md:p-7">
+<div>
   <User {...user} />
   <Separator class="my-5" />
   <div class="grid grid-cols-3 gap-1 pt-2">

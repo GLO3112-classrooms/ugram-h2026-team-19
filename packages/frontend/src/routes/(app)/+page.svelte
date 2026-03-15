@@ -61,18 +61,9 @@
   });
 </script>
 
-<div class="mx-auto max-w-5xl space-y-5 p-3 md:p-7">
+<div>
   {#each posts as post (post.id)}
-    <Post
-      id={post.id}
-      user={post.user}
-      image={post.image}
-      description={post.description}
-      keywords={post.keywords}
-      mentions={post.mentions}
-      date={post.createdAt}
-      own={me?.id === post.user.id}
-    />
+    <Post {...post} own={me?.id === post.user.id} />
   {/each}
 
   {#if error}

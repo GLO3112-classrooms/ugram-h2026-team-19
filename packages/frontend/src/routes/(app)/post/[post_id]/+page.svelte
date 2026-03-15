@@ -10,7 +10,7 @@
   const post = $derived(await getPost(params.post_id));
 </script>
 
-<div class="mx-auto max-w-5xl space-y-5 p-3 md:p-7">
+<div>
   <Post
     id={post.id}
     user={post.user}
@@ -18,7 +18,7 @@
     description={post.description}
     keywords={post.keywords}
     mentions={post.mentions}
-    date={post.createdAt}
+    createdAt={post.createdAt}
     own={me?.id === post.user.id}
   />
 </div>

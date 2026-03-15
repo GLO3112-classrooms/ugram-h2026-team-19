@@ -1,7 +1,12 @@
 import { command, form, getRequestEvent, query } from "$app/server";
 import { env } from "$env/dynamic/private";
 import { error, redirect } from "@sveltejs/kit";
-import { userAvatarUploadSchema, userUpdateDataSchema, type UserData } from "backend/schemas";
+import {
+  userAvatarUploadSchema,
+  userUpdateDataSchema,
+  type UserData,
+  type UserDataListSchema
+} from "backend/schemas";
 import { z } from "zod";
 
 export const getMe = query(async (): Promise<UserData> => {
@@ -94,7 +99,7 @@ export const getUsers = query(
     limit: z.number().optional().default(10),
     skip: z.number().optional().default(0)
   }),
-  async ({ search, limit, skip }) => {
+  async ({ search, limit, skip }): Promise<UserDataListSchema> => {
     const { cookies } = getRequestEvent();
     const token = cookies.get("token");
 

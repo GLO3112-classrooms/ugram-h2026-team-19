@@ -16,11 +16,11 @@
     description: string;
     keywords: string[];
     mentions: PostData["mentions"];
-    date: string;
+    createdAt: string;
     own: boolean;
   }
 
-  let { id, user, image, description, keywords, mentions, date, own }: Props = $props();
+  let { id, user, image, description, keywords, mentions, createdAt, own }: Props = $props();
 </script>
 
 <div class="space-y-1">
@@ -30,7 +30,7 @@
       <p>@{user.username}</p>
     </a>
     <div class="flex items-center gap-2">
-      <p class="text-xs text-gray-500">{new Date(date).toLocaleDateString()}</p>
+      <p class="text-xs text-gray-500">{new Date(createdAt).toLocaleDateString()}</p>
       {#if own}
         <a href={resolve(`/update/${id}`)}>
           <Button variant="ghost" size="icon" aria-label="Submit">

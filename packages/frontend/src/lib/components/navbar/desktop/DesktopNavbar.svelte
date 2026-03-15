@@ -31,6 +31,8 @@
   </Sidebar.Root>
 
   <Sidebar.Inset>
-    {@render children?.()}
+    <div class="mx-auto flex w-full max-w-xl flex-col p-2">
+      {@render children?.()}
+    </div>
   </Sidebar.Inset>
 </Sidebar.Provider>

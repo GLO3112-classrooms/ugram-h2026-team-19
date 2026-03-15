@@ -1,6 +1,7 @@
 <script module lang="ts">
   import Navbar, { type NavigationBar } from "$lib/components/navbar/Navbar.svelte";
   import {
+    CogIcon,
     GalleryVerticalEndIcon,
     HouseIcon,
     PlusIcon,
@@ -33,11 +34,16 @@
         label: "Create",
         icon: PlusIcon,
         url: "/create"
+      },
+      {
+        label: "Profile",
+        icon: UserIcon,
+        url: "/user/me"
       }
     ],
     footer: {
-      label: "Account",
-      icon: UserIcon,
+      label: "Settings",
+      icon: CogIcon,
       url: "/account"
     }
   };

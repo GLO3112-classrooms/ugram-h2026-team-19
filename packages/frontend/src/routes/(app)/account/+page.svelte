@@ -13,7 +13,7 @@
 
 <svelte:boundary>
   {#await getMe() then { profilePicture, username, createdAt, lastname, firstname, phoneNumber, email }}
-    <div class="mx-auto flex max-w-lg flex-col gap-12 pt-8">
+    <div class="mx-auto flex flex-col gap-12 pt-8">
       <form {...patchMe} class="flex flex-col items-center gap-8">
         <div class="flex justify-center gap-6">
           <EditableAvatar avatarUrl={profilePicture} />
