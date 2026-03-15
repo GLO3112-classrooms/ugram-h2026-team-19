@@ -80,6 +80,8 @@ resource "aws_ecs_task_definition" "backend" {
           name  = "DATABASE_URL",
           value = "postgresql://${var.postgres_user}:${var.postgres_password}@${aws_db_instance.postgres.address}:5432/${var.postgres_db}?sslmode=verify-full&sslrootcert=/certs/global-bundle.pem"
         },
+        { name = "PGSSLMODE", value = "require" },
+        { name = "PGSSLREJECTUNAUTHORIZED", value = "0" },
 
         { name = "REDIS_HOST", value = aws_elasticache_cluster.redis.cache_nodes[0].address },
 
