@@ -88,6 +88,7 @@ networks:
   ugram-network:
 
 volumes:
+  ugram-cache:
   ugram-database:
   ugram-cache:
   ugram-s3:
