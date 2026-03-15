@@ -72,6 +72,7 @@ services:
       dockerfile: ./packages/frontend/Dockerfile
       args:
         - API_URL=http://backend:3000
+        - PUBLIC_API_URL=${STATIC_ORIGIN}
     container_name: ugram-frontend
     ports:
       - "8080:8080"
