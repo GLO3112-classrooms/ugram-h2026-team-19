@@ -2,6 +2,7 @@
   import * as Avatar from "$lib/shadcn/avatar/index.js";
   import { Button } from "$lib/shadcn/button";
   import * as Dialog from "$lib/shadcn/dialog/index.js";
+  import * as Field from "$lib/shadcn/field";
   import { postAvatar } from "$lib/remotes/user.remote";
   import { PenIcon, TrashIcon, UploadIcon } from "@lucide/svelte";
 
@@ -37,6 +38,10 @@
         <TrashIcon /> Delete current
       </Button>
     </div>
+
+    {#each postAvatar.fields.avatar.issues() as issue, index (index)}
+      <Field.Error>{issue.message}</Field.Error>
+    {/each}
 
     <Dialog.Footer>
       <form {...postAvatar} enctype="multipart/form-data" class="w-full">

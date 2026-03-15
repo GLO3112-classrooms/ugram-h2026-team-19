@@ -51,3 +51,21 @@ export const signIn = form(authLoginSchema, async (data, issue) => {
       return error(500, "Something went wrong");
   }
 });
+
+export const signOut = form(async () => {
+  const { cookies } = getRequestEvent();
+
+  const response = await fetch(API_URL + "/auth/logout", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cookies.get("token")}` }
+  });
+
+  switch (response.status) {
+    case 204:
+    case 401:
+      getRequestEvent().cookies.delete("token", { path: "/" });
+      return redirect(303, "/signin");
+    default:
+      return error(500, "Something went wrong");
+  }
+});
