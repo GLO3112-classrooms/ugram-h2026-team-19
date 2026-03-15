@@ -1,28 +1,3 @@
-resource "aws_ecs_cluster" "main" {
-  name = "nestjs-backend-cluster"
-}
-
-resource "aws_security_group" "ecs" {
-  name        = "ecs-sg"
-  description = "Allow outbound traffic to services"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description     = "Allow ALB traffic"
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = [aws_security_group.lb.id] # allow ALB SG
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "aws_iam_role" "ecs_execution" {
   name = "ecs-execution-role"
 
@@ -43,13 +18,13 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_cloudwatch_log_group" "nestjs_backend" {
-  name              = "/ecs/nestjs-backend"
+resource "aws_cloudwatch_log_group" "backend" {
+  name              = "/ecs/backend"
   retention_in_days = 0
 }
 
 resource "aws_ecs_task_definition" "backend" {
-  family                   = "nestjs-backend"
+  family                   = "backend"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
@@ -106,9 +81,10 @@ resource "aws_ecs_task_definition" "backend" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.nestjs_backend.name
-          "awslogs-region"        = "us-east-1"
-          "awslogs-stream-prefix" = "ecs"
+          awslogs-group         = aws_cloudwatch_log_group.backend.name,
+          awslogs-create-group  = true
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
         }
       }
     }
@@ -119,40 +95,6 @@ resource "aws_ecs_task_definition" "backend" {
     aws_elasticache_cluster.redis,
     aws_s3_bucket.app_bucket
   ]
-}
-
-resource "aws_security_group" "lb" {
-  name        = "alb-sg"
-  description = "Allow HTTP/HTTPS to ALB"
-  vpc_id      = aws_vpc.main.id
-
-  # Allow inbound HTTP from anywhere
-  ingress {
-    description      = "HTTP from anywhere"
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  # Allow inbound HTTPS if needed
-  ingress {
-    description      = "HTTPS from anywhere"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  # Allow all outbound (default for ALB is fine)
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 }
 
 resource "aws_lb" "backend" {
@@ -192,7 +134,7 @@ resource "aws_lb_listener" "backend" {
 }
 
 resource "aws_ecs_service" "backend" {
-  name            = "nestjs-backend"
+  name            = "backend"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.backend.arn
   desired_count   = 1

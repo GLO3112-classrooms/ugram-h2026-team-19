@@ -2,6 +2,61 @@ resource "aws_security_group" "backend" {
   vpc_id = aws_vpc.main.id
 }
 
+resource "aws_security_group" "ecs" {
+  name        = "ecs-sg"
+  description = "Allow outbound traffic to services"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Allow ALB traffic"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lb.id] # allow ALB SG
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "lb" {
+  name        = "alb-sg"
+  description = "Allow HTTP/HTTPS to ALB"
+  vpc_id      = aws_vpc.main.id
+
+  # Allow inbound HTTP from anywhere
+  ingress {
+    description      = "HTTP from anywhere"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  # Allow inbound HTTPS if needed
+  ingress {
+    description      = "HTTPS from anywhere"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  # Allow all outbound (default for ALB is fine)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "postgres" {
   vpc_id = aws_vpc.main.id
 
@@ -38,10 +93,10 @@ resource "aws_security_group" "frontend" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "Allow HTTP from internet"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
+    description     = "Allow HTTP from internet"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.lb_frontend.id]
   }
 

@@ -1,3 +1,58 @@
+resource "aws_cloudwatch_log_group" "frontend" {
+  name              = "/ecs/frontend"
+  retention_in_days = 0
+}
+
+resource "aws_ecs_task_definition" "frontend" {
+  family                   = "frontend"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+
+  execution_role_arn = aws_iam_role.ecs_execution.arn
+
+  container_definitions = jsonencode([
+    {
+      name  = "frontend"
+      image = "ghcr.io/ximaz/ugram/frontend:latest"
+
+      repositoryCredentials = {
+        credentialsParameter = aws_secretsmanager_secret.ghcr.arn
+      }
+
+      portMappings = [{
+        containerPort = 8080
+      }]
+
+      environment = [
+        {
+          name  = "API_URL"
+          value = "http://${aws_lb.backend.dns_name}"
+        },
+        {
+          name  = "PUBLIC_API_URL"
+          value = "http://${aws_lb.backend.dns_name}"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.frontend.name,
+          awslogs-create-group  = true
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+    }
+  ])
+
+  depends_on = [
+    aws_ecs_service.backend
+  ]
+}
+
 resource "aws_lb" "frontend" {
   name               = "tf-lb-frontend"
   load_balancer_type = "application"
@@ -33,53 +88,8 @@ resource "aws_lb_listener" "frontend" {
   }
 }
 
-resource "aws_ecs_task_definition" "frontend" {
-  family                   = "ugram-frontend"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  network_mode             = "awsvpc"
-
-  execution_role_arn = aws_iam_role.ecs_execution.arn
-
-  container_definitions = jsonencode([
-    {
-      name  = "frontend"
-      image = "ghcr.io/ximaz/ugram/frontend:latest"
-
-      repositoryCredentials = {
-        credentialsParameter = aws_secretsmanager_secret.ghcr.arn
-      }
-
-      portMappings = [{
-        containerPort = 8080
-      }]
-
-      environment = [
-        {
-          name  = "API_URL"
-          value = "http://${aws_lb.backend.dns_name}"
-        },
-        {
-          name  = "PUBLIC_API_URL"
-          value = "http://${aws_lb.backend.dns_name}"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.nestjs_backend.name
-          awslogs-region        = "us-east-1"
-          awslogs-stream-prefix = "ecs"
-        }
-      }
-    }
-  ])
-}
-
 resource "aws_ecs_service" "frontend" {
-  name            = "ugram-frontend"
+  name            = "frontend"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.frontend.arn
   desired_count   = 1
