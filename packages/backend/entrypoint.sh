@@ -5,7 +5,7 @@ echo "Waiting for database..."
 
 MAX_RETRIES=30
 COUNTER=1
-until nc -z "$PGHOST" 5432; do
+until pg_isready -h $PGHOST -p 5432 -U $POSTGRES_USER -d $POSTGRES_DB; do
   if [ "$COUNTER" -ge "$MAX_RETRIES" ]; then
     echo "Database did not become ready in time."
     exit 1
