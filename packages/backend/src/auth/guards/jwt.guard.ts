@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { AuthService } from '../auth.service.js';
+import { UserTokenDataDto } from '../entities/user-token-data.js';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -23,16 +24,27 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     const token = AuthGuard.extractBearerToken(request);
 
-    try {
-      const payload = await this.authService.verifyToken(token);
+    const isTokenInvalidated = await this.authService.isTokenInvalidated(token);
+    if (isTokenInvalidated) {
+      throw new UnauthorizedException();
+    }
 
-      Object.defineProperty(request, 'user', {
-        configurable: true,
-        value: payload,
-      });
+    let payload: UserTokenDataDto;
+    try {
+      payload = await this.authService.verifyToken(token);
     } catch {
       throw new UnauthorizedException();
     }
+
+    Object.defineProperty(request, 'user', {
+      configurable: true,
+      value: payload,
+    });
+
+    Object.defineProperty(request, 'token', {
+      configurable: true,
+      value: token,
+    });
     return true;
   }
 }

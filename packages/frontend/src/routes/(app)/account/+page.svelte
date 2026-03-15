@@ -5,6 +5,7 @@
   import Email from "./components/Email.svelte";
   import Names from "./components/Names.svelte";
   import PhoneNumber from "./components/PhoneNumber.svelte";
+  import Delete from "./components/Delete.svelte";
 
   import { getMe, patchMe } from "$lib/remotes/user.remote";
 </script>
@@ -29,6 +30,7 @@
       </div>
 
       <Button type="submit" class="cursor-pointer">Submit</Button>
+      <Delete />
     </form>
   {/await}
 

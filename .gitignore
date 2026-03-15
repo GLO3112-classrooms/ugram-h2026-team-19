@@ -13,3 +13,9 @@ node_modules/
 
 packages/backend/dist
 packages/backend/src/prisma/generated
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+terraform.plan

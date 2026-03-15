@@ -1,0 +1,25 @@
+name: Mirroring
+
+on: [push, delete]
+
+jobs:
+  to_github:
+    if: github.repository == 'Ximaz/ugram'
+    runs-on: ubuntu-latest
+
+    environment: Mirror
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - uses: ximaz/ximaz-repo-mirror@1.0.0
+        with:
+          target_repo_url:
+            git@github.com:GLO3112-classrooms/ugram-h2026-team-19.git
+          ssh_private_key:
+            ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh_private_key_passphrase:
+            ${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}
+          ssh_username: git

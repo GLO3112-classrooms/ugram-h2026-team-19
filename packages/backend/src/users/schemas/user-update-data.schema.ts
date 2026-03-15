@@ -1,4 +1,5 @@
 import z from 'zod';
+import { PHONE_NUMBER_REGEX } from '../../constants.js';
 
 export const userUpdateDataSchema = z.object({
   email: z.email().optional().meta({
@@ -10,9 +11,11 @@ export const userUpdateDataSchema = z.object({
   lastname: z.string().optional().meta({
     description: 'The user lastname',
   }),
-  phoneNumber: z.string().optional().meta({
-    description: 'The user phone number',
-  }),
+  phoneNumber: z
+    .string()
+    .regex(PHONE_NUMBER_REGEX, { error: 'Invalid phone number' })
+    .optional()
+    .meta({ description: 'The user phone number' }),
 });
 
 export type UserUpdateData = z.infer<typeof userUpdateDataSchema>;

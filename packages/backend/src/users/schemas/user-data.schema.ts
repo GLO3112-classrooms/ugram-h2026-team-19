@@ -1,4 +1,5 @@
 import z from 'zod';
+import { PHONE_NUMBER_REGEX } from '../../constants.js';
 
 export const userDataSchema = z.object({
   id: z.uuid().meta({ description: 'The ID of the authenticated user' }),
@@ -14,9 +15,12 @@ export const userDataSchema = z.object({
   lastname: z.string().meta({
     description: 'The user lastname',
   }),
-  phoneNumber: z.string().meta({
-    description: 'The user phone number',
-  }),
+  phoneNumber: z
+    .string()
+    .regex(PHONE_NUMBER_REGEX, { error: 'Invalid phone number' })
+    .meta({
+      description: 'The user phone number',
+    }),
   profilePicture: z.string().meta({
     description: 'The user profile picture URL (empty string if none)',
   }),
