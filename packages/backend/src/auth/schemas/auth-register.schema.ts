@@ -8,7 +8,7 @@ export const authRegisterSchema = z.object({
   username: z.string().meta({
     description: 'The user username',
   }),
-  password: z.string().meta({
+  password: z.string().nonempty().meta({
     description: 'The user password',
   }),
   firstname: z.string().meta({
