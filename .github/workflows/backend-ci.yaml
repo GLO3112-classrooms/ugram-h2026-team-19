@@ -64,7 +64,7 @@ jobs:
       packages: write
       id-token: write
 
-    # if: github.event_name == 'push'
+    if: github.event_name == 'push'
 
     env:
       REGISTRY_HOST: ghcr.io
@@ -91,9 +91,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY_HOST }}/${{ github.repository }}/backend
           tags: |
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/dev' }}
             type=sha,format=short
-# ,enable=${{ github.ref == 'refs/heads/dev' }}
 
       - name: Build and push image (backend)
         uses: docker/build-push-action@v7
