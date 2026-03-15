@@ -1,7 +1,9 @@
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { form, getRequestEvent } from "$app/server";
+import { command, form, getRequestEvent } from "$app/server";
 import { API_URL } from "$env/static/private";
 import { authLoginSchema, authRegisterSchema } from "backend/schemas";
+
+export const getGoogleAuthURL = command(() => API_URL + "/auth/google");
 
 export const signUp = form(authRegisterSchema, async (data, issue) => {
   const response = await fetch(API_URL + "/auth/register", {

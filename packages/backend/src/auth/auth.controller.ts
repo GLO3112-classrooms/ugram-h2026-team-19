@@ -81,11 +81,8 @@ export class AuthController {
   }
 
   @Get('google')
-  async googleLogin(
-    @Query('redirect_url') redirectUrl: string,
-    @Res() reply: fastify.FastifyReply,
-  ) {
-    return await this.authService.googleLogin(redirectUrl, reply);
+  async googleLogin(@Res() reply: fastify.FastifyReply) {
+    return await this.authService.googleLogin(reply);
   }
 
   @Get('google/callback')

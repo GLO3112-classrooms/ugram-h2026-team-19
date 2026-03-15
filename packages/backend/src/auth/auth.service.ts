@@ -133,13 +133,9 @@ export class AuthService {
     return (await this.cacheService.get(`loggout-${rawToken}`)) === '1';
   }
 
-  async googleLogin(redirectUrl: string, reply: fastify.FastifyReply) {
+  async googleLogin(reply: fastify.FastifyReply) {
     const state = randomBytes(32).toString('hex');
-    await this.cacheService.set(
-      `oauth_state:${state}`,
-      { redirectUrl },
-      300000,
-    );
+    await this.cacheService.set(`oauth_state:${state}`, '1', 300000);
 
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID!,
@@ -160,7 +156,8 @@ export class AuthService {
 
   async googleCallback(code: string, state: string) {
     const stored = await this.cacheService.get(`oauth_state:${state}`);
-    if (!stored) throw new UnauthorizedException('Invalid or expired state');
+    if (stored !== '1')
+      throw new UnauthorizedException('Invalid or expired state');
 
     await this.cacheService.del(`oauth_state:${state}`);
 
@@ -211,7 +208,7 @@ export class AuthService {
         data: {
           email: profile.email,
           username: profile.name,
-          firstname: profile.name,
+          firstname: profile.given_name,
           lastname: profile.family_name,
         },
       });
