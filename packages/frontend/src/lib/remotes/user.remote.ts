@@ -58,11 +58,11 @@ export const deleteMe = command(async () => {
   switch (response.status) {
     case 204:
       cookies.delete("token", { path: "/" });
-      return { success: true };
+      return { success: true, redirect: "/signin" } as const;
     case 401:
-      return { success: false };
-    // 404 is not intended to happen here, so we treat it as unexpected error
+      return { success: false, redirect: "/signin" } as const;
     case 404:
+      return { success: false, message: "User not found" } as const;
     default:
       return error(500, "Something went wrong");
   }

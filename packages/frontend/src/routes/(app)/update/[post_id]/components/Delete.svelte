@@ -14,9 +14,10 @@
 
   async function handleDelete() {
     try {
-      const { success } = await deletePost(id);
-      if (success) await goto(resolve("/"));
-      else await goto(resolve("/signin"));
+      const { redirect, message } = await deletePost(id);
+      if (redirect) await goto(resolve(redirect));
+      else if (message) error = message;
+      else error = "Unable to delete post";
     } catch {
       error = "Unable to delete post";
     }
