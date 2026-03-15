@@ -237,15 +237,15 @@ export class PostsService {
     const uploadStream = file.file.pipe(sizeValidator);
 
     const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
-    const key = path.join(postId, sanitizedFilename);
+    const key = path.join('images', postId, sanitizedFilename);
     await this.s3Service.pushMultipart(
-      'images',
+      this.staticService.getBucket(),
       key,
       uploadStream,
       file.mimetype,
     );
 
-    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/images/${postId}/${sanitizedFilename}`;
+    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/${key}`;
     await this.prismaService.post.update({
       where: {
         id: postId,

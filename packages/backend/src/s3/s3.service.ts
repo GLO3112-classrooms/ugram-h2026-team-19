@@ -12,10 +12,6 @@ import {
   AbortMultipartUploadCommand,
   PutObjectCommand,
   DeleteObjectCommand,
-  BucketAlreadyOwnedByYou,
-  NotFound,
-  NoSuchBucket,
-  NoSuchKey,
 } from '@aws-sdk/client-s3';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -32,7 +28,7 @@ export class S3Service {
     this.client = new S3Client({
       endpoint: endpoint,
       region: region,
-      forcePathStyle: true,
+      forcePathStyle: !endpoint.includes(`${region}.amazonaws.com`), // keep minio compatibility
       credentials: {
         accessKeyId,
         secretAccessKey,
@@ -72,8 +68,11 @@ export class S3Service {
     try {
       await this.client.send(new HeadBucketCommand({ Bucket: bucket }));
     } catch (e) {
-      if (e instanceof BucketAlreadyOwnedByYou) return;
-      if (e instanceof NotFound || e instanceof NoSuchBucket) {
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      if (e.name === 'BucketAlreadyOwnedByYou') return;
+      if (e.name === 'NotFound' || e.name === 'NoSuchBucket') {
         await this.createBucket(bucket);
         return;
       }
@@ -117,7 +116,10 @@ export class S3Service {
     try {
       await this.client.send(new CreateBucketCommand({ Bucket: bucket }));
     } catch (e) {
-      if (e instanceof BucketAlreadyOwnedByYou) return;
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      if (e.name === 'BucketAlreadyOwnedByYou') return;
       throw e;
     }
   }
@@ -231,7 +233,10 @@ export class S3Service {
         metadata: result.Metadata,
       };
     } catch (e) {
-      if (e instanceof NoSuchKey || e instanceof NotFound) {
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      if (e.name === 'NoSuchKey' || e.name === 'NotFound') {
         throw new NotFoundException(
           `Unable to find the document. (loc: ${bucket}/${key})`,
         );
@@ -261,7 +266,10 @@ export class S3Service {
         new DeleteObjectCommand({ Bucket: bucket, Key: key }),
       );
     } catch (e) {
-      if (e instanceof NoSuchKey || e instanceof NotFound) {
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      if (e.name === 'NoSuchKey' || e.name === 'NotFound') {
         throw new NotFoundException(
           `Unable to find the document. (loc: ${bucket}/${key})`,
         );
