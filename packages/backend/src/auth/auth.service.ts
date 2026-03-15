@@ -3,7 +3,6 @@ import {
   ConflictException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { hash, argon2id, verify } from 'argon2';
@@ -83,7 +82,7 @@ export class AuthService {
       if (e instanceof PrismaClientKnownRequestError && 'P2002' === e.code) {
         throw new ConflictException();
       }
-      throw new InternalServerErrorException();
+      throw e;
     }
   }
 
