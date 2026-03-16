@@ -1,6 +1,7 @@
-variable "postgres_db" {}
-variable "postgres_user" {}
-variable "postgres_password" {}
+resource "aws_db_subnet_group" "main" {
+  name       = "db-subnet-group"
+  subnet_ids = var.private_subnet_ids
+}
 
 resource "aws_db_instance" "postgres" {
   engine         = "postgres"
@@ -12,11 +13,8 @@ resource "aws_db_instance" "postgres" {
   username = var.postgres_user
   password = var.postgres_password
 
-  publicly_accessible = true
-
-  skip_final_snapshot = true
-}
-
-output "endpoint" {
-  value = aws_db_instance.postgres.address
+  publicly_accessible    = true
+  skip_final_snapshot    = true
+  vpc_security_group_ids = [var.sg_id]
+  db_subnet_group_name   = aws_db_subnet_group.main.name
 }

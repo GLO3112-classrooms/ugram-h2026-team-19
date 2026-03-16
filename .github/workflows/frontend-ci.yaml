@@ -60,7 +60,7 @@ jobs:
       packages: write
       id-token: write
 
-    # if: github.event_name == 'push'
+    if: github.event_name == 'push'
 
     env:
       AWS_REGION: us-east-1

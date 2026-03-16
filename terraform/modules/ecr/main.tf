@@ -1,9 +1,11 @@
 resource "aws_ecr_repository" "backend" {
-  name = "ugram-backend"
+  name         = "ugram-backend"
+  force_delete = true
 }
 
 resource "aws_ecr_repository" "frontend" {
-  name = "ugram-frontend"
+  name         = "ugram-frontend"
+  force_delete = true
 }
 
 output "backend_url" {

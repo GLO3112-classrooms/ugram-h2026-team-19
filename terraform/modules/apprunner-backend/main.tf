@@ -18,6 +18,13 @@ resource "aws_iam_role_policy_attachment" "backend_apprunner_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
 
+resource "aws_apprunner_vpc_connector" "backend" {
+  vpc_connector_name = "${var.service_name}-vpc-connector"
+
+  subnets         = var.private_subnet_ids
+  security_groups = [var.sg_id]
+}
+
 resource "aws_apprunner_service" "backend" {
   service_name = var.service_name
 
@@ -31,11 +38,17 @@ resource "aws_apprunner_service" "backend" {
       image_repository_type = "ECR"
 
       image_configuration {
-        port = "3000"
+        port                          = "3000"
         runtime_environment_variables = var.env
       }
     }
 
     auto_deployments_enabled = true
+  }
+  network_configuration {
+    egress_configuration {
+      vpc_connector_arn = aws_apprunner_vpc_connector.backend.arn
+      egress_type       = "VPC"
+    }
   }
 }

@@ -18,6 +18,13 @@ resource "aws_iam_role_policy_attachment" "frontend_apprunner_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
 
+resource "aws_apprunner_vpc_connector" "frontend" {
+  vpc_connector_name = "${var.service_name}-vpc-connector"
+
+  subnets         = var.private_subnet_ids
+  security_groups = [var.sg_id]
+}
+
 resource "aws_apprunner_service" "frontend" {
   service_name = var.service_name
 
@@ -31,7 +38,7 @@ resource "aws_apprunner_service" "frontend" {
       image_repository_type = "ECR"
 
       image_configuration {
-        port = "8080"
+        port                          = "8080"
         runtime_environment_variables = var.env
       }
     }
