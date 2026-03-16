@@ -20,7 +20,7 @@ L'objectif de ce projet est de créer une plateforme conviviale pour les utilisa
 
 ## 🧪 Tests
 
-Pour tester l'application, rendez-vous sur cette adresse : https://ugram.zowks.fr. Si vous avez des difficultés à accéder à l'application, essayez à l'adresse suivante : https://ugram.wshs.dev/.
+Pour tester l'application, rendez-vous sur cette adresse : https://ugram.zowks.fr. Si vous avez des difficultés à accéder à l'application, essayez à l'adresse suivante : https://ugram.wshs.dev.
 
 Vous pouvez également installer et exécuter le projet en local en suivant [les instructions d'installation ci-dessous](#-installation).
 
