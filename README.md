@@ -1,6 +1,6 @@
 # 📷 Ugram
 
-Ugram est une application de partage de photos inspirée d'Instagram, développée dans le cadre du cours GLO-3112 à l'Université Laval.
+Ugram est une application de partage de photos inspirée d'Instagram, développée dans le cadre du cours GLO-3112 à l'Université Laval.\
 L'objectif de ce projet est de créer une plateforme conviviale pour les utilisateurs afin de partager leurs moments en images, tout en mettant en pratique les compétences acquises en développement web.
 
 ## 🎨 Technologies utilisées (Design)
@@ -17,12 +17,14 @@ L'objectif de ce projet est de créer une plateforme conviviale pour les utilisa
 - Cache : [Redis](https://redis.io)
 - CI/CD : [GitHub Actions](https://docs.github.com/actions), [ESLint](https://eslint.org), [Prettier](https://prettier.io), Git hooks ([Husky](https://typicode.github.io/husky)), analyse de code / coverage, Dependabot
 - Méthode de déploiement : AWS et Terraform
-- [//]: # (TODO: détailler)
+
+[//]: # (TODO: détailler)
 
 ## 🧪 Tests
 
 [//]: # (TODO: URL de l'application une fois déployée)
 Pour tester l'application, rendez-vous sur cette adresse : http://....
+
 Vous pouvez également installer et exécuter le projet en local en suivant [les instructions d'installation ci-dessous](#-installation).
 
 - Création de compte (`/signup`)
