@@ -14,17 +14,6 @@ variable "postgres_password" {
   sensitive   = true
 }
 
-variable "ghcr_username" {
-  type        = string
-  description = "GitHub username for GHCR"
-}
-
-variable "ghcr_pat" {
-  type        = string
-  description = "GitHub Personal Access Token for GHCR"
-  sensitive   = true
-}
-
 variable "jwt_secret" {
   type        = string
   sensitive   = true
