@@ -18,12 +18,9 @@ L'objectif de ce projet est de créer une plateforme conviviale pour les utilisa
 - CI/CD : [GitHub Actions](https://docs.github.com/actions), [ESLint](https://eslint.org), [Prettier](https://prettier.io), Git hooks ([Husky](https://typicode.github.io/husky)), analyse de code / coverage, Dependabot
 - Méthode de déploiement : AWS et Terraform
 
-[//]: # (TODO: détailler)
-
 ## 🧪 Tests
 
-[//]: # (TODO: URL de l'application une fois déployée)
-Pour tester l'application, rendez-vous sur cette adresse : http://....
+Pour tester l'application, rendez-vous sur cette adresse : https://ugram.zowks.fr.
 
 Vous pouvez également installer et exécuter le projet en local en suivant [les instructions d'installation ci-dessous](#-installation).
 
