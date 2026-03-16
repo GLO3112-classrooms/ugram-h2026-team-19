@@ -1,5 +1,7 @@
-# 📷 ugram
-Ugram est une application de partage de photos inspirée d'Instagram, développée dans le cadre du cours GLO-3112 à l'Université Laval. L'objectif de ce projet est de créer une plateforme conviviale pour les utilisateurs afin de partager leurs moments en images, tout en mettant en pratique les compétences acquises en développement web.
+# 📷 Ugram
+
+Ugram est une application de partage de photos inspirée d'Instagram, développée dans le cadre du cours GLO-3112 à l'Université Laval.\
+L'objectif de ce projet est de créer une plateforme conviviale pour les utilisateurs afin de partager leurs moments en images, tout en mettant en pratique les compétences acquises en développement web.
 
 ## 🎨 Technologies utilisées (Design)
 - Frontend
@@ -12,10 +14,41 @@ Ugram est une application de partage de photos inspirée d'Instagram, développ�
         - ORM : [Prisma](https://www.prisma.io)
 - Base de données : [PostgreSQL](https://www.postgresql.org)
 - Stockage de fichiers : [AWS S3](https://aws.amazon.com/s3)
+- Cache : [Redis](https://redis.io)
 - CI/CD : [GitHub Actions](https://docs.github.com/actions), [ESLint](https://eslint.org), [Prettier](https://prettier.io), Git hooks ([Husky](https://typicode.github.io/husky)), analyse de code / coverage, Dependabot
-- Méthode de déploiement : le déploiement suivra les méthodes démontrées dans le cours
+- Méthode de déploiement : AWS et Terraform
+
+## 🧪 Tests
+
+Pour tester l'application, rendez-vous sur cette adresse : https://ugram.zowks.fr. Si vous avez des difficultés à accéder à l'application, essayez à l'adresse suivante : https://ugram.wshs.dev.
+
+Vous pouvez également installer et exécuter le projet en local en suivant [les instructions d'installation ci-dessous](#-installation).
+
+- Création de compte (`/signup`)
+  - Créez un compte en remplissant les informations du formulaire
+- Connexion (`/signin`)
+  - Connectez-vous avec les informations de votre compte
+- Connexion avec Google (`/signin`)
+  - Connectez-vous en utilisant votre compte Google
+- Page d'accueil (`/`)
+  - Visualisez les photos partagées par les utilisateurs
+- Profil utilisateur (`/account`)
+  - Accédez à votre profil pour voir et modifier vos informations personnelles
+- Créez un nouveau post (`/create`)
+  - Partagez une nouvelle photo en remplissant le formulaire de création de post
+- Profil d'un utilisateur (`/user/[userId]` et `/user/me`)
+  - Cliquez sur le nom d'un utilisateur pour voir son profil et ses posts
+  - Votre profil est également accessible depuis la barre de navigation
+- Voir les détails d'un post (`/post/[postId]`)
+  - Cliquez sur un post depuis la page profil d'un utilisateur pour voir ses détails
+- Recherche d'utilisateurs et de posts (`/search`)
+  - Recherchez d'autres utilisateurs et visualisez leurs profils
+  - Recherchez des posts par mots-clés ou hashtags et visualisez les résultats
+- Modifier les détails d'un post (`/update/[postId]`)
+  - Modifiez les détails d'un post que vous avez créé
 
 ## 🚀 Installation
+
 Voici les différentes étapes pour installer et exécuter le projet en local :
 
 > [!NOTE]
@@ -27,30 +60,17 @@ git clone git@github.com:GLO3112-classrooms/ugram-h2026-team-19.git
 ```
 2. Se rendre sur la branche de release :
 ```bash
-git switch release-1
+git switch release-2
 ```
-3. Configurer les variables d'environnement en créant un fichier `.env` à la racine du projet et en y ajoutant les variables nécessaires (vous pouvez vous référer au fichier `.env.example` pour connaître les variables requises).
+3. Configurer les variables d'environnement en créant un fichier `.env` basé sur le `.env.example` à la racine du projet
+  - Pour la plupart des valeurs, vous pouvez vous référer au fichier `.env.example`.
+  - Pour `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`, il vous faudra créer et configurer une application dans la console de développeur Google pour obtenir ces informations.
+    - Dans "origines JavaScript autorisées", mettez `http://127.0.0.1:3000` (ou la valeur correspondante à `STATIC_ORIGIN` dans votre `.env`).
+    - Dans "URI de redirection autorisés", mettez `http://127.0.0.1:8080/auth/google/callback` (ou la valeur correspondante à `FRONTEND_ORIGIN` dans votre `.env` suivie de `/auth/google/callback`, soit la valeur correspondante à `GOOGLE_CALLBACK_URL` dans votre `.env`).
 4. Démarrer le projet avec Docker Compose :
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
-
-## 🧪 Tests
-Pour tester l'application, assurez-vous d'avoir suivi les étapes d'installation de la section précédente.
-Une fois cela fait, vous pourrez vous rendre sur l'adresse indiquée dans votre console (http://127.0.0.1:8080)
-
-- Création de compte (`/signup`)
-  - Créez un compte en remplissant les informations du formulaire
-- Connexion (`/signin`)
-  - Connectez-vous avec les informations de votre compte
-- Page d'accueil (`/`)
-  - Visualisez les photos partagées par les utilisateurs
-- Profil utilisateur (`/account`)
-  - Accédez à votre profil pour voir et modifier vos informations personnelles
-- Recherche d'utilisateurs (`/search`)
-  - Recherchez d'autres utilisateurs et visualisez leurs profils
-- Créez un nouveau post (`/create`)
-  - Partagez une nouvelle photo en remplissant le formulaire de création de post
 
 ## 👥 Équipe
 
