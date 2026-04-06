@@ -68,24 +68,7 @@ export class PostsController {
     return await this.postsService.get(id);
   }
 
-  @Get('list/:userId')
-  @UseGuards(AuthGuard)
-  @ApiParam({
-    name: 'userId',
-    description: 'The user ID from which to fetch the posts.',
-  })
-  @ApiOkResponse({
-    type: PostDataListDto,
-    description: 'The user post list matching the current page.',
-  })
-  async listUserPosts(
-    @Param('userId') userId: UUID,
-    @Query() query: GetPostsQueryDto,
-  ): Promise<PostDataList> {
-    return await this.postsService.listUserPosts(userId, query);
-  }
-
-  @Get('list')
+  @Get()
   @UseGuards(AuthGuard)
   @ApiOkResponse({
     type: PostDataListDto,

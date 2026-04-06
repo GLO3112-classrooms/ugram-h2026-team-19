@@ -110,7 +110,8 @@ export const getPosts = query(
     const { cookies } = getRequestEvent();
     const token = cookies.get("token");
 
-    const url = new URL(userId ? `/posts/list/${userId}` : "/posts/list", env.API_URL);
+    const url = new URL("/posts", env.API_URL);
+    if (userId) url.searchParams.append("userId", userId.toString());
     url.searchParams.append("skip", skip.toString());
     url.searchParams.append("limit", limit.toString());
     if (description) url.searchParams.append("description", description);
