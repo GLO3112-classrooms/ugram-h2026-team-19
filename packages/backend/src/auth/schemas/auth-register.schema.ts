@@ -19,7 +19,10 @@ export const authRegisterSchema = z.object({
   }),
   phoneNumber: z
     .string()
-    .regex(PHONE_NUMBER_REGEX, { error: 'Invalid phone number' })
+    .regex(PHONE_NUMBER_REGEX, {
+      error:
+        'Invalid phone number: must contain only digits and be between 9 and 12 characters',
+    })
     .meta({
       description: 'The user phone number',
     }),
