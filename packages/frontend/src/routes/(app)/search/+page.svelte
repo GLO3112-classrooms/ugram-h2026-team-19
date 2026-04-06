@@ -28,6 +28,8 @@
 </script>
 
 <script lang="ts">
+  import Code from "$lib/components/Code.svelte";
+
   let value: string = $state("");
   let tab: (typeof tabs)[number]["label"] = $state(tabs[0].label);
 </script>
@@ -81,6 +83,11 @@
 
     {#if tab === "keyword"}
       <Tabs.Content value="keyword">
+        <p class="mb-1 text-xs text-muted-foreground">
+          All non-alphanumeric characters will be ignored, except for the dash (<Code>-</Code>) and
+          the underscore (<Code>_</Code>). Spaces are ignored too, so <Code>key word</Code> will search
+          for <Code>keyword</Code> for example.
+        </p>
         {#key value}
           <InfiniteScroll callback={(skip, limit) => getPosts({ keywords: value, skip, limit })}>
             {#snippet children({ posts })}
