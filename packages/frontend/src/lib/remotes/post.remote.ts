@@ -1,13 +1,8 @@
 import * as z from "zod";
 import { query, form, getRequestEvent, command } from "$app/server";
 import { env } from "$env/dynamic/private";
-import {
-  postCreateSchema,
-  type PostData,
-  type PostDataList,
-  postImageUploadSchema,
-  getPostsQuerySchema
-} from "backend/schemas";
+import { type PostData, type PostDataList, getPostsQuerySchema } from "backend/schemas";
+import { createPostSchema } from "$lib/schemas/createPost.schema";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { getUsers } from "$lib/remotes/user.remote";
 
@@ -18,11 +13,6 @@ async function getMentionId(mention: string) {
 
   return users[0].id;
 }
-
-const createPostSchema = postCreateSchema
-  .extend(postImageUploadSchema.shape)
-  .extend({ keywords: z.string().optional(), mention: z.string().optional() })
-  .omit({ mentions: true });
 
 export const createPost = form(createPostSchema, async (data, issue) => {
   const { cookies } = getRequestEvent();
