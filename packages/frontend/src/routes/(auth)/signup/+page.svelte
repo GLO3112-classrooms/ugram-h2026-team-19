@@ -69,6 +69,7 @@
               <FieldInput
                 required
                 label="password"
+                minlength={8}
                 {...signUp.fields.password.as("password")}
                 issues={signUp.fields.password.issues()}
               />
