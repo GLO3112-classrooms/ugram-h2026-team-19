@@ -85,10 +85,10 @@ export class PostsService {
     };
   }
 
-  async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
+  async list(query: GetPostsQuery): Promise<PostDataList> {
     const posts = await this.prismaService.post.findMany({
       where: {
-        ...(fromUserID ? { user: { id: fromUserID } } : {}),
+        ...(query.userId ? { user: { id: query.userId } } : {}),
         ...(query.description
           ? {
               description: { contains: query.description, mode: 'insensitive' },
@@ -124,7 +124,7 @@ export class PostsService {
 
     const total = await this.prismaService.post.count({
       where: {
-        ...(fromUserID ? { user: { id: fromUserID } } : {}),
+        ...(query.userId ? { user: { id: query.userId } } : {}),
         ...(query.description
           ? {
               description: { contains: query.description, mode: 'insensitive' },
@@ -170,13 +170,6 @@ export class PostsService {
       posts: refinedPosts,
       total: total,
     };
-  }
-
-  async listUserPosts(
-    userId: UUID,
-    query: GetPostsQuery,
-  ): Promise<PostDataList> {
-    return await this.list(query, userId);
   }
 
   async create(

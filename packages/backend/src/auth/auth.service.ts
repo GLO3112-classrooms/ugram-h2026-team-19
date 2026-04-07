@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import {
-  BadRequestException,
+  BadGatewayException,
   ConflictException,
   Inject,
   Injectable,
@@ -188,7 +188,7 @@ export class AuthService {
       ),
     );
 
-    if (!profile.email || !profile.name) throw new BadRequestException();
+    if (!profile.email || !profile.name) throw new BadGatewayException();
 
     return await this.validateGoogleUser(profile);
   }
