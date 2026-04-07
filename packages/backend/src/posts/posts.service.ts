@@ -332,8 +332,9 @@ export class PostsService {
 
     if (post?.image) {
       const url = new URL(post.image);
-      const imageKey = url.pathname.substring('/static/images/'.length);
-      await this.s3Service.delete('images', imageKey);
+      const filename = url.pathname.substring('/static/images/'.length);
+      const key = path.join('images', id, filename);
+      await this.s3Service.delete(this.staticService.getBucket(), key);
     }
 
     await this.prismaService.post.delete({

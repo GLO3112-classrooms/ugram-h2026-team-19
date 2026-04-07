@@ -3,7 +3,7 @@ set -e
 
 echo "Waiting for database..."
 
-MAX_RETRIES=30
+MAX_RETRIES=5
 COUNTER=1
 until pg_isready -h $PGHOST -p 5432 -U $POSTGRES_USER -d $POSTGRES_DB; do
   if [ "$COUNTER" -ge "$MAX_RETRIES" ]; then
