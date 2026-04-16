@@ -1,5 +1,5 @@
 import { command, form, getRequestEvent, query } from "$app/server";
-import { env } from "$env/dynamic/private";
+import { apiFetch } from "$lib/server/api";
 import { error, redirect } from "@sveltejs/kit";
 import {
   userAvatarUploadSchema,
@@ -13,7 +13,7 @@ export const getMe = query(async (): Promise<UserData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(env.API_URL + "/users/me", {
+  const response = await apiFetch("/users/me", {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -24,14 +24,14 @@ export const getMe = query(async (): Promise<UserData> => {
     case 404:
       return redirect(303, "/signin");
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
 export const patchMe = form(userUpdateDataSchema, async (body) => {
   const token = getRequestEvent().cookies.get("token");
 
-  const response = await fetch(`${env.API_URL}/users/me`, {
+  const response = await apiFetch("/users/me", {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -48,14 +48,14 @@ export const patchMe = form(userUpdateDataSchema, async (body) => {
     case 401:
       return redirect(303, "/signin");
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
 export const deleteMe = command(async () => {
   const { cookies } = getRequestEvent();
 
-  const response = await fetch(env.API_URL + `/users/me`, {
+  const response = await apiFetch(`/users/me`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${cookies.get("token")}` }
   });
@@ -69,7 +69,7 @@ export const deleteMe = command(async () => {
     case 404:
       return { success: false, message: "User not found" } as const;
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -77,7 +77,7 @@ export const getUser = query(z.uuid(), async (id) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(env.API_URL + `/users/${id}`, {
+  const response = await apiFetch(`/users/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -89,7 +89,7 @@ export const getUser = query(z.uuid(), async (id) => {
     case 404:
       return error(404, "User not found");
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -103,8 +103,8 @@ export const getUsers = query(
     const { cookies } = getRequestEvent();
     const token = cookies.get("token");
 
-    const response = await fetch(
-      `${env.API_URL}/users?${new URLSearchParams({ search, limit: limit.toString(), skip: skip.toString() })}`,
+    const response = await apiFetch(
+      `/users?${new URLSearchParams({ search, limit: limit.toString(), skip: skip.toString() })}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -114,7 +114,7 @@ export const getUsers = query(
       case 401:
         return redirect(303, "/signin");
       default:
-        return error(500, "Something went wrong");
+        return error(500, (await response.text()) || "Something went wrong");
     }
   }
 );
@@ -125,7 +125,7 @@ export const postAvatar = form(userAvatarUploadSchema, async ({ avatar }) => {
   const body = new FormData();
   body.append("avatar", avatar);
 
-  const response = await fetch(`${env.API_URL}/users/me/avatar`, {
+  const response = await apiFetch("/users/me/avatar", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`
