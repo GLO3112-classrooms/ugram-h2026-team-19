@@ -43,7 +43,9 @@ export class UsersService {
         profilePicture: true,
       },
       where: {
-        username: query.search ? { contains: query.search } : undefined,
+        username: query.search
+          ? { contains: query.search, mode: 'insensitive' }
+          : undefined,
       },
       skip: query.skip,
       take: query.limit,
@@ -59,7 +61,9 @@ export class UsersService {
       })),
       total: await this.prismaService.user.count({
         where: {
-          username: query.search ? { contains: query.search } : undefined,
+          username: query.search
+            ? { contains: query.search, mode: 'insensitive' }
+            : undefined,
         },
       }),
     };
