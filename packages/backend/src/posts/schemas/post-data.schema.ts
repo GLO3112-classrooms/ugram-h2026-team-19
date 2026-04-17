@@ -1,21 +1,18 @@
 import z from 'zod';
 
-export const postDataAuthorSchema = z.object({
-  id: z.uuid().meta({ description: 'The ID of the author' }),
+export const postUserSchema = z.object({
+  id: z.uuid().meta({ description: 'The ID of the user' }),
   username: z.string().meta({
-    description: 'The author username',
+    description: 'The username',
   }),
   profilePicture: z.string().meta({
-    description: 'The author profile picture URL (empty string if none)',
+    description: 'The user profile picture URL (empty string if none)',
   }),
 });
 
-export const postDataMentionSchema = z.object({
-  id: z.uuid().meta({
-    description: 'The ID of the user',
-  }),
-  username: z.string().meta({
-    description: 'The username of the user',
+export const postKeywordSchema = z.object({
+  value: z.string().meta({
+    description: 'The keyword for this post data.',
   }),
 });
 
@@ -24,16 +21,16 @@ export const postDataSchema = z.object({
   description: z.string().meta({
     description: 'The post description',
   }),
-  keywords: z.array(z.string()).meta({
+  keywords: z.array(postKeywordSchema).meta({
     description: 'The post keywords (hashtags)',
   }),
-  mentions: z.array(postDataMentionSchema).meta({
-    description: 'The post user mentions (list of user ID)',
+  mentions: z.array(postUserSchema).meta({
+    description: 'The post user mentions',
   }),
   image: z.string().meta({
     description: 'The post image URL (empty string if none)',
   }),
-  user: postDataAuthorSchema.meta({
+  user: postUserSchema.meta({
     description: 'The post author',
   }),
   createdAt: z.iso.datetime().meta({
