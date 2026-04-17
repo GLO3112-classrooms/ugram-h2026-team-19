@@ -15,7 +15,7 @@
 </script>
 
 <Dialog.Root>
-  <Dialog.Trigger type="button" class="flex cursor-pointer gap-1">
+  <Dialog.Trigger type="button" class="flex cursor-pointer gap-1 hover:underline">
     {@render children()}
   </Dialog.Trigger>
   <Dialog.Content class="sm:max-w-[425px]">
