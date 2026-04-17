@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 }
 
 module "ecr" {
@@ -17,23 +17,28 @@ module "ecr" {
 
 module "vpc" {
   source = "./modules/vpc"
+
+  public_subnet_count = 2
+  region              = var.aws_region
+  vpc_cidr            = var.vpc_cidr
+  internet_cidr       = var.internet_cidr
 }
 
 module "database" {
   source = "./modules/database"
 
-  postgres_db        = var.postgres_db
-  postgres_user      = var.postgres_user
-  postgres_password  = var.postgres_password
-  vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  sg_id              = module.vpc.app_sg_id
+  postgres_db       = var.postgres_db
+  postgres_user     = var.postgres_user
+  postgres_password = var.postgres_password
+  vpc_id            = module.vpc.vpc_id
+  subnet_ids        = module.vpc.private_subnet_ids
+  sg_id             = module.vpc.app_sg_id
 }
 
 module "redis" {
-  source             = "./modules/redis"
-  private_subnet_ids = module.vpc.private_subnet_ids
-  sg_id              = module.vpc.app_sg_id
+  source     = "./modules/redis"
+  subnet_ids = module.vpc.private_subnet_ids
+  sg_id      = module.vpc.app_sg_id
 }
 
 module "storage" {
@@ -43,11 +48,14 @@ module "storage" {
 module "backend" {
   source = "./modules/apprunner-backend"
 
-  service_name = "backend-v2"
+  service_name = "backend"
   image        = module.ecr.backend_url
 
-  private_subnet_ids = module.vpc.private_subnet_ids
-  sg_id              = module.vpc.app_sg_id
+  subnet_ids = module.vpc.private_subnet_ids
+  sg_id      = module.vpc.app_sg_id
+
+  google_client_id     = var.google_client_id
+  google_client_secret = var.google_client_secret
 
   env = {
     POSTGRES_USER     = var.postgres_user
@@ -57,32 +65,33 @@ module "backend" {
 
     REDIS_HOST = module.redis.endpoint
 
-    S3_BUCKET            = module.storage.bucket
-    S3_ACCESS_KEY_ID     = "dummy"
-    S3_SECRET_ACCESS_KEY = "dummy"
-    S3_REGION            = "us-east-1"
-    S3_ENDPOINT          = "https://s3.us-east-1.amazonaws.com"
+    S3_BUCKET   = module.storage.bucket
+    S3_REGION   = var.aws_region
+    S3_ENDPOINT = "https://s3.${var.aws_region}.amazonaws.com"
 
     DATABASE_URL = "postgresql://${var.postgres_user}:${var.postgres_password}@${module.database.endpoint}:5432/${var.postgres_db}?sslmode=verify-full&sslrootcert=/certs/global-bundle.pem"
 
     JWT_SECRET     = var.jwt_secret
     JWT_EXPIRES_IN = var.jwt_expires_in
 
-    STATIC_ORIGIN = "http://placeholder"
+    STATIC_ORIGIN       = "https://2mwpsg4nxd.${var.aws_region}.awsapprunner.com"
+    GOOGLE_CALLBACK_URL = "https://ujumf5vnfq.${var.aws_region}.awsapprunner.com/auth/google/callback"
   }
 }
 
 module "frontend" {
   source = "./modules/apprunner-frontend"
 
-  service_name = "frontend-v2"
+  service_name = "frontend"
   image        = module.ecr.frontend_url
 
-  private_subnet_ids = module.vpc.private_subnet_ids
-  sg_id              = module.vpc.app_sg_id
+  subnet_ids = module.vpc.public_subnet_ids
+  sg_id      = module.vpc.app_sg_id
 
   env = {
-    API_URL        = module.backend.url
-    PUBLIC_API_URL = module.backend.url
+    API_URL         = "https://${module.backend.url}"
+    PUBLIC_API_URL  = "https://${module.backend.url}"
+    FRONTEND_ORIGIN = "https://ujumf5vnfq.${var.aws_region}.awsapprunner.com"
+    BODY_SIZE_LIMIT = "50M"
   }
 }

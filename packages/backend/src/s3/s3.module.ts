@@ -13,10 +13,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
         const s3Region = configService.getOrThrow<string>('S3_REGION');
 
-        const s3AccessKeyId =
-          configService.getOrThrow<string>('S3_ACCESS_KEY_ID');
+        const s3AccessKeyId = configService.get<string>('S3_ACCESS_KEY_ID');
 
-        const s3SecretAccessKey = configService.getOrThrow<string>(
+        const s3SecretAccessKey = configService.get<string>(
           'S3_SECRET_ACCESS_KEY',
         );
 

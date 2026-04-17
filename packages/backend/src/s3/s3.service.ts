@@ -14,6 +14,7 @@ import {
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 
 @Injectable()
 export class S3Service {
@@ -22,17 +23,20 @@ export class S3Service {
   constructor(
     endpoint: string,
     region: string,
-    accessKeyId: string,
-    secretAccessKey: string,
+    accessKeyId?: string,
+    secretAccessKey?: string,
   ) {
     this.client = new S3Client({
       endpoint: endpoint,
       region: region,
       forcePathStyle: !endpoint.includes(`${region}.amazonaws.com`), // keep minio compatibility
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+      credentials:
+        accessKeyId && secretAccessKey
+          ? {
+              accessKeyId,
+              secretAccessKey,
+            }
+          : fromNodeProviderChain(),
     });
   }
 

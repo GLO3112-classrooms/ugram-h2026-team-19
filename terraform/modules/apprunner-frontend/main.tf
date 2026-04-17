@@ -18,15 +18,19 @@ resource "aws_iam_role_policy_attachment" "frontend_apprunner_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
 
-resource "aws_apprunner_vpc_connector" "frontend" {
-  vpc_connector_name = "${var.service_name}-vpc-connector"
+resource "aws_apprunner_auto_scaling_configuration_version" "frontend_single_threaded" {
+  auto_scaling_configuration_name = "${var.service_name}-as-config"
 
-  subnets         = var.private_subnet_ids
-  security_groups = [var.sg_id]
+  max_concurrency = 1
+
+  min_size = 1
+  max_size = 2
 }
 
 resource "aws_apprunner_service" "frontend" {
   service_name = var.service_name
+
+  auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.frontend_single_threaded.arn
 
   source_configuration {
     authentication_configuration {
@@ -45,4 +49,19 @@ resource "aws_apprunner_service" "frontend" {
 
     auto_deployments_enabled = true
   }
+
+  instance_configuration {
+    cpu    = "0.25 vCPU"
+    memory = "0.5 GB"
+  }
+}
+
+resource "aws_apprunner_custom_domain_association" "ugram_zowks_fr" {
+  service_arn = aws_apprunner_service.frontend.arn
+  domain_name = "ugram.zowks.fr"
+}
+
+resource "aws_apprunner_custom_domain_association" "ugram_whsh_dev" {
+  service_arn = aws_apprunner_service.frontend.arn
+  domain_name = "ugram.whsh.dev"
 }

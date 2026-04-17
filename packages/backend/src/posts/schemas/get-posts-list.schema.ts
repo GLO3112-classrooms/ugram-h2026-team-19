@@ -15,6 +15,9 @@ export const getPostsQuerySchema = z.object({
     description:
       'A string to search for in the post descriptions. Only posts whose description contains this string will be returned.',
   }),
+  userId: z.uuid().optional().meta({
+    description: 'Optional user ID to retrieve only their posts',
+  }),
 });
 
 export type GetPostsQuery = z.infer<typeof getPostsQuerySchema>;

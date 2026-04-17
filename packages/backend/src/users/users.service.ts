@@ -43,7 +43,9 @@ export class UsersService {
         profilePicture: true,
       },
       where: {
-        username: query.search ? { contains: query.search } : undefined,
+        username: query.search
+          ? { contains: query.search, mode: 'insensitive' }
+          : undefined,
       },
       skip: query.skip,
       take: query.limit,
@@ -59,7 +61,9 @@ export class UsersService {
       })),
       total: await this.prismaService.user.count({
         where: {
-          username: query.search ? { contains: query.search } : undefined,
+          username: query.search
+            ? { contains: query.search, mode: 'insensitive' }
+            : undefined,
         },
       }),
     };
@@ -173,8 +177,9 @@ export class UsersService {
 
     if (user.profilePicture) {
       const url = new URL(user.profilePicture);
-      const key = url.pathname.substring('/static/avatars/'.length);
-      await this.s3Service.delete('avatars', key);
+      const filename = url.pathname.substring('/static/avatars/'.length);
+      const key = path.join('avatars', token.id, filename);
+      await this.s3Service.delete(this.staticService.getBucket(), key);
     }
 
     const posts = await this.prismaService.post.findMany({
