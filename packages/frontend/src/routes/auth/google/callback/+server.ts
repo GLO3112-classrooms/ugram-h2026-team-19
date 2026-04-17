@@ -1,6 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { env } from "$env/dynamic/private";
+import { apiFetch } from "$lib/server/api";
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
   const code = url.searchParams.get("code");
@@ -8,9 +8,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 
   if (!code || !state) return error(400, "Missing code or state");
 
-  const response = await fetch(
-    `${env.API_URL}/auth/google/callback?${new URLSearchParams({ code, state })}`
-  );
+  const response = await apiFetch(`/auth/google/callback?${new URLSearchParams({ code, state })}`);
 
   if (!response.ok) return error(response.status, "Failed to authenticate with Google");
 

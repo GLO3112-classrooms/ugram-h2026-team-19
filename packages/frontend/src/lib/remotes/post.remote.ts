@@ -1,6 +1,7 @@
 import * as z from "zod";
 import { query, form, getRequestEvent, command } from "$app/server";
 import { env } from "$env/dynamic/private";
+import { apiFetch } from "$lib/server/api";
 import {
   postCreateSchema,
   type PostData,
@@ -31,7 +32,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   const mention = data.mention ? await getMentionId(data.mention) : null;
   if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
-  let response = await fetch(env.API_URL + "/posts", {
+  let response = await apiFetch("/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,7 +56,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
       case 401:
         return redirect(303, "/signin");
       default:
-        return error(500, "Something went wrong");
+        return error(500, (await response.text()) || "Something went wrong");
     }
   }
 
@@ -63,7 +64,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   const formData = new FormData();
   formData.append("image", data.image);
 
-  response = await fetch(env.API_URL + `/posts/${id}/image`, {
+  response = await apiFetch(`/posts/${id}/image`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formData
@@ -80,7 +81,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
     case 403:
     case 404:
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -88,7 +89,7 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(env.API_URL + `/posts/${id}`, {
+  const response = await apiFetch(`/posts/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -100,7 +101,7 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
     case 404:
       return error(404, "Post not found");
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -117,7 +118,7 @@ export const getPosts = query(
     if (description) url.searchParams.append("description", description);
     if (keywords) url.searchParams.append("keywords", keywords);
 
-    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const response = await apiFetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
     switch (response.status) {
       case 200:
@@ -125,7 +126,7 @@ export const getPosts = query(
       case 401:
         return redirect(303, "/signin");
       default:
-        return error(500, "Something went wrong");
+        return error(500, (await response.text()) || "Something went wrong");
     }
   }
 );
@@ -144,7 +145,7 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
   const mention = data.mention ? await getMentionId(data.mention) : null;
   if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
-  const response = await fetch(env.API_URL + `/posts/${data.id}`, {
+  const response = await apiFetch(`/posts/${data.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -173,7 +174,7 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
     case 404:
       return invalid(issue.id("Post not found"));
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -181,7 +182,7 @@ export const deletePost = command(z.uuid(), async (id) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(env.API_URL + `/posts/${id}`, {
+  const response = await apiFetch(`/posts/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -196,6 +197,6 @@ export const deletePost = command(z.uuid(), async (id) => {
     case 404:
       return { success: false, message: "Post not found" } as const;
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
