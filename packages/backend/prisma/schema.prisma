@@ -34,5 +34,6 @@ model Post {
   image String @default("")
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([createdAt(sort: Desc)])
   @@map("post")
 }
