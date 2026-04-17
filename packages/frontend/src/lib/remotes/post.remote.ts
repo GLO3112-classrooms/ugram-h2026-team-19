@@ -11,6 +11,7 @@ import {
 } from "backend/schemas";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { getUsers } from "$lib/remotes/user.remote";
+import { formatKeywordsToMany, formatKeywordsToSingle } from "$lib/utils/keywords";
 
 async function getMentionId(mention: string) {
   const { users } = await getUsers({ search: mention, limit: 1 });
@@ -40,11 +41,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
     },
     body: JSON.stringify({
       description: data.description,
-      keywords: (data.keywords ?? "")
-        .replace(/[^\w-_]+/g, " ")
-        .trim()
-        .split(" ")
-        .filter((keyword) => keyword.length),
+      keywords: formatKeywordsToMany(data.keywords ?? ""),
       mentions: mention ? [mention] : []
     })
   });
@@ -116,7 +113,7 @@ export const getPosts = query(
     url.searchParams.append("skip", skip.toString());
     url.searchParams.append("limit", limit.toString());
     if (description) url.searchParams.append("description", description);
-    if (keywords) url.searchParams.append("keywords", keywords);
+    if (keywords) url.searchParams.append("keywords", formatKeywordsToSingle(keywords));
 
     const response = await apiFetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -153,11 +150,7 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
     },
     body: JSON.stringify({
       description: data.description,
-      keywords: (data.keywords ?? "")
-        .replace(/[^\w-_]+/g, " ")
-        .trim()
-        .split(" ")
-        .filter((keyword) => keyword.length),
+      keywords: formatKeywordsToMany(data.keywords ?? ""),
       mentions: mention ? [mention] : []
     })
   });
