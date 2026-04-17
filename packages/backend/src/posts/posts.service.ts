@@ -23,6 +23,7 @@ import { GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
 import { StaticService } from '../static/static.service.js';
+import { PostWhereInput } from '../prisma/generated/models/Post.js';
 
 @Injectable()
 export class PostsService {
@@ -85,60 +86,45 @@ export class PostsService {
     };
   }
 
-  async list(query: GetPostsQuery): Promise<PostDataList> {
-    const posts = await this.prismaService.post.findMany({
-      where: {
-        ...(query.userId ? { user: { id: query.userId } } : {}),
-        ...(query.description
-          ? {
-              description: { contains: query.description, mode: 'insensitive' },
-            }
-          : {}),
-        ...(query.keywords
-          ? {
-              keywords: {
-                hasEvery: query.keywords.split(',').map((k) => k.trim()),
-              },
-            }
-          : {}),
-      },
-      select: {
-        id: true,
-        description: true,
-        keywords: true,
-        mentions: true,
-        image: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profilePicture: true,
+  async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
+    const where: PostWhereInput = {
+      ...(fromUserID ? { user: { id: fromUserID } } : {}),
+      ...(query.description
+        ? { description: { contains: query.description, mode: 'insensitive' } }
+        : {}),
+      ...(query.keywords
+        ? {
+            keywords: {
+              hasEvery: query.keywords.split(',').map((k) => k.trim()),
+            },
+          }
+        : {}),
+    };
+
+    const [posts, total] = await this.prismaService.$transaction([
+      this.prismaService.post.findMany({
+        where,
+        select: {
+          id: true,
+          description: true,
+          keywords: true,
+          mentions: true,
+          image: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              username: true,
+              profilePicture: true,
+            },
           },
         },
-      },
-      skip: query.skip,
-      take: query.limit,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const total = await this.prismaService.post.count({
-      where: {
-        ...(query.userId ? { user: { id: query.userId } } : {}),
-        ...(query.description
-          ? {
-              description: { contains: query.description, mode: 'insensitive' },
-            }
-          : {}),
-        ...(query.keywords
-          ? {
-              keywords: {
-                hasEvery: query.keywords.split(',').map((k) => k.trim()),
-              },
-            }
-          : {}),
-      },
-    });
+        skip: query.skip,
+        take: query.limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prismaService.post.count({ where }),
+    ]);
 
     const refinedPosts = await Promise.all(
       posts.map(async (p) => ({
@@ -229,16 +215,17 @@ export class PostsService {
     });
     const uploadStream = file.file.pipe(sizeValidator);
 
-    const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
-    const key = path.join('images', postId, sanitizedFilename);
+    await this.s3Service.createBucket('images');
+
+    const filename = path.join(postId, file.filename);
     await this.s3Service.pushMultipart(
-      this.staticService.getBucket(),
-      key,
+      'images',
+      filename,
       uploadStream,
       file.mimetype,
     );
+    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/images/${filename}`;
 
-    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/${key}`;
     await this.prismaService.post.update({
       where: {
         id: postId,
@@ -325,9 +312,8 @@ export class PostsService {
 
     if (post?.image) {
       const url = new URL(post.image);
-      const filename = url.pathname.substring('/static/images/'.length);
-      const key = path.join('images', id, filename);
-      await this.s3Service.delete(this.staticService.getBucket(), key);
+      const imageKey = url.pathname.substring('/static/images/'.length);
+      await this.s3Service.delete('images', imageKey);
     }
 
     await this.prismaService.post.delete({
