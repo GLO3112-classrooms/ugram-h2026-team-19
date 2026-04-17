@@ -19,8 +19,10 @@ model User {
   profilePicture String   @map("profile_picture") @default("")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  posts           Post[]
-  mentionedInPosts Post[] @relation("PostMentions")
+  posts            Post[]
+  mentionedInPosts Post[]        @relation("PostMentions")
+  reactedToPosts   Post[]        @relation("PostReactions")
+  comments         PostComment[]
 
   @@map("user")
 }
@@ -34,11 +36,11 @@ model Post {
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId   String @map("user_id")
 
-  /// Also known as 'hashtags'
-  keywords PostKeyword[] @relation("PostKeywords")
-
-  /// Mentioned users — join table managed by Prisma
+  // Post social interactions
   mentions User[] @relation("PostMentions")
+  reactions User[] @relation("PostReactions")
+  keywords PostKeyword[] @relation("PostKeywords")
+  comments  PostComment[]
 
   @@map("post")
 }
@@ -46,9 +48,24 @@ model Post {
 model PostKeyword {
   id      String @id @default(uuid())
   value   String @unique
-
   posts   Post[] @relation("PostKeywords")
 
   @@index([value])
   @@map("post_keyword")
+}
+
+model PostComment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId String @map("post_id")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @map("user_id")
+
+  @@index([postId])
+  @@index([userId])
+  @@map("post_comment")
 }
