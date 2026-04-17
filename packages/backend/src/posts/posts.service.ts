@@ -41,10 +41,18 @@ export class PostsService {
       select: {
         id: true,
         description: true,
-        keywords: true,
-        mentions: true,
         image: true,
         createdAt: true,
+        keywords: {
+          select: { value: true },
+        },
+        mentions: {
+          select: {
+            id: true,
+            username: true,
+            profilePicture: true,
+          },
+        },
         user: {
           select: {
             id: true,
@@ -59,30 +67,9 @@ export class PostsService {
       throw new NotFoundException();
     }
 
-    const mentions = (
-      await Promise.all(
-        post.mentions.map(
-          async (mention) =>
-            await this.prismaService.user.findUnique({
-              where: { id: mention },
-              select: { id: true, username: true },
-            }),
-        ),
-      )
-    ).filter((mention) => null !== mention);
-
     return {
-      id: post.id,
-      description: post.description,
-      keywords: post.keywords,
-      mentions: mentions,
-      image: post.image,
+      ...post,
       createdAt: post.createdAt.toISOString(),
-      user: {
-        id: post.user.id,
-        username: post.user.username,
-        profilePicture: post.user.profilePicture,
-      },
     };
   }
 
@@ -94,9 +81,13 @@ export class PostsService {
         : {}),
       ...(query.keywords
         ? {
-            keywords: {
-              hasEvery: query.keywords.split(',').map((k) => k.trim()),
-            },
+            AND: query.keywords.split(',').map((keyword) => ({
+              keywords: {
+                some: {
+                  value: { contains: keyword.trim(), mode: 'insensitive' },
+                },
+              },
+            })),
           }
         : {}),
     };
@@ -107,10 +98,18 @@ export class PostsService {
         select: {
           id: true,
           description: true,
-          keywords: true,
-          mentions: true,
           image: true,
           createdAt: true,
+          keywords: {
+            select: { value: true },
+          },
+          mentions: {
+            select: {
+              id: true,
+              username: true,
+              profilePicture: true,
+            },
+          },
           user: {
             select: {
               id: true,
@@ -126,35 +125,9 @@ export class PostsService {
       this.prismaService.post.count({ where }),
     ]);
 
-    const refinedPosts = await Promise.all(
-      posts.map(async (p) => ({
-        id: p.id,
-        description: p.description,
-        keywords: p.keywords,
-        mentions: (
-          await Promise.all(
-            p.mentions.map(
-              async (mention) =>
-                await this.prismaService.user.findUnique({
-                  where: { id: mention },
-                  select: { id: true, username: true },
-                }),
-            ),
-          )
-        ).filter((mention) => null !== mention),
-        image: p.image,
-        createdAt: p.createdAt.toISOString(),
-        user: {
-          id: p.user.id,
-          username: p.user.username,
-          profilePicture: p.user.profilePicture,
-        },
-      })),
-    );
-
     return {
-      posts: refinedPosts,
-      total: total,
+      posts: posts.map((p) => ({ ...p, createdAt: p.createdAt.toISOString() })),
+      total,
     };
   }
 
@@ -162,19 +135,22 @@ export class PostsService {
     token: UserTokenDataDto,
     dto: PostCreateDto,
   ): Promise<CreatedPostDto> {
-    const post = await this.prismaService.post.create({
+    return this.prismaService.post.create({
       data: {
         user: { connect: { id: token.id } },
         description: dto.description,
-        keywords: dto.keywords,
-        mentions: dto.mentions,
+        keywords: {
+          connectOrCreate: dto.keywords.map((value) => ({
+            where: { value },
+            create: { value },
+          })),
+        },
+        mentions: {
+          connect: dto.mentions.map((id) => ({ id })),
+        },
       },
-      select: {
-        id: true,
-      },
+      select: { id: true },
     });
-
-    return post;
   }
 
   async uploadImage(
@@ -244,17 +220,8 @@ export class PostsService {
     body: PostUpdateDto,
   ): Promise<void> {
     const post = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        description: true,
-        keywords: true,
-        mentions: true,
-        user: {
-          select: { id: true },
-        },
-      },
+      where: { id },
+      select: { user: { select: { id: true } } },
     });
 
     if (null === post) {
@@ -266,63 +233,56 @@ export class PostsService {
     }
 
     await this.prismaService.post.update({
-      where: {
-        id: id,
-        user: {
-          id: token.id,
-        },
-      },
+      where: { id, user: { id: token.id } },
       data: {
-        description: body.description ?? post.description,
-        keywords: body.keywords ?? post.keywords,
-        mentions: body.mentions ?? post.mentions,
+        ...(body.description ? { description: body.description } : {}),
+        ...(body.keywords
+          ? {
+              keywords: {
+                set: [],
+                connectOrCreate: body.keywords.map((value) => ({
+                  where: { value },
+                  create: { value },
+                })),
+              },
+            }
+          : {}),
+        ...(body.mentions
+          ? {
+              mentions: {
+                set: body.mentions.map((id) => ({ id })),
+              },
+            }
+          : {}),
       },
     });
   }
 
   async delete(token: UserTokenData, id: UUID): Promise<void> {
-    const postAuthor = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
+    const post = await this.prismaService.post.findUnique({
+      where: { id },
       select: {
-        user: {
-          select: { id: true },
-        },
+        image: true,
+        user: { select: { id: true } },
       },
     });
 
-    if (null === postAuthor) {
+    if (null === post) {
       throw new NotFoundException();
     }
 
-    if (token.id !== postAuthor.user.id) {
+    if (token.id !== post.user.id) {
       throw new ForbiddenException();
     }
 
-    // Delete the image from S3 if it exists
-    const post = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        image: true,
-      },
-    });
-
-    if (post?.image) {
+    if (post.image) {
       const url = new URL(post.image);
       const imageKey = url.pathname.substring('/static/images/'.length);
       await this.s3Service.delete('images', imageKey);
     }
 
     await this.prismaService.post.delete({
-      where: {
-        id: id,
-        user: {
-          id: token.id,
-        },
-      },
+      where: { id, user: { id: token.id } },
     });
   }
 }
