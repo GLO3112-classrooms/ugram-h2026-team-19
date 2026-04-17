@@ -24,7 +24,56 @@ import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
 import { StaticService } from '../static/static.service.js';
 import { PostWhereInput } from '../prisma/generated/models/Post.js';
+import { PostCommentCreateDto } from './dto/create-post-comment.dto.js';
+import { PostCommentDto } from './entities/post-comment.js';
 import { KeywordDataDto } from './entities/keyword-data.js';
+
+// Reusable select shape for both get and list
+const POST_SELECT = {
+  id: true,
+  description: true,
+  image: true,
+  createdAt: true,
+  keywords: {
+    select: { value: true },
+  },
+  mentions: {
+    select: {
+      id: true,
+      username: true,
+      profilePicture: true,
+    },
+  },
+  reactions: {
+    select: {
+      id: true,
+      username: true,
+      profilePicture: true,
+    },
+  },
+  comments: {
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      user: {
+        select: {
+          id: true,
+          username: true,
+          profilePicture: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' as const },
+  },
+  user: {
+    select: {
+      id: true,
+      username: true,
+      profilePicture: true,
+    },
+  },
+} as const;
 
 @Injectable()
 export class PostsService {
@@ -34,34 +83,33 @@ export class PostsService {
     private readonly staticService: StaticService,
   ) {}
 
+  // ─── Keywords ────────────────────────────────────────────────────────────────
+
+  async listKeywords(): Promise<KeywordDataDto[]> {
+    const keywords = await this.prismaService.postKeyword.findMany({
+      select: {
+        value: true,
+        _count: {
+          select: { posts: true },
+        },
+      },
+      orderBy: {
+        posts: { _count: 'desc' },
+      },
+    });
+
+    return keywords.map((k) => ({
+      value: k.value,
+      count: k._count.posts,
+    }));
+  }
+
+  // ─── Posts ───────────────────────────────────────────────────────────────────
+
   async get(id: UUID) {
     const post = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        id: true,
-        description: true,
-        image: true,
-        createdAt: true,
-        keywords: {
-          select: { value: true },
-        },
-        mentions: {
-          select: {
-            id: true,
-            username: true,
-            profilePicture: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profilePicture: true,
-          },
-        },
-      },
+      where: { id },
+      select: POST_SELECT,
     });
 
     if (null === post) {
@@ -71,6 +119,10 @@ export class PostsService {
     return {
       ...post,
       createdAt: post.createdAt.toISOString(),
+      comments: post.comments.map((c) => ({
+        ...c,
+        createdAt: c.createdAt.toISOString(),
+      })),
     };
   }
 
@@ -96,29 +148,7 @@ export class PostsService {
     const [posts, total] = await this.prismaService.$transaction([
       this.prismaService.post.findMany({
         where,
-        select: {
-          id: true,
-          description: true,
-          image: true,
-          createdAt: true,
-          keywords: {
-            select: { value: true },
-          },
-          mentions: {
-            select: {
-              id: true,
-              username: true,
-              profilePicture: true,
-            },
-          },
-          user: {
-            select: {
-              id: true,
-              username: true,
-              profilePicture: true,
-            },
-          },
-        },
+        select: POST_SELECT,
         skip: query.skip,
         take: query.limit,
         orderBy: { createdAt: 'desc' },
@@ -127,7 +157,14 @@ export class PostsService {
     ]);
 
     return {
-      posts: posts.map((p) => ({ ...p, createdAt: p.createdAt.toISOString() })),
+      posts: posts.map((p) => ({
+        ...p,
+        createdAt: p.createdAt.toISOString(),
+        comments: p.comments.map((c) => ({
+          ...c,
+          createdAt: c.createdAt.toISOString(),
+        })),
+      })),
       total,
     };
   }
@@ -287,22 +324,88 @@ export class PostsService {
     });
   }
 
-  async listKeywords(): Promise<KeywordDataDto[]> {
-    const keywords = await this.prismaService.postKeyword.findMany({
+  // ─── Reactions ───────────────────────────────────────────────────────────────
+
+  async toggleReaction(token: UserTokenData, postId: UUID): Promise<void> {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
       select: {
-        value: true,
-        _count: {
-          select: { posts: true },
-        },
-      },
-      orderBy: {
-        posts: { _count: 'desc' },
+        reactions: { where: { id: token.id }, select: { id: true } },
       },
     });
 
-    return keywords.map((k: { value: string; _count: { posts: number } }) => ({
-      value: k.value,
-      count: k._count.posts,
-    }));
+    if (null === post) throw new NotFoundException();
+
+    const alreadyLiked = post.reactions.length > 0;
+
+    await this.prismaService.post.update({
+      where: { id: postId },
+      data: {
+        reactions: {
+          [alreadyLiked ? 'disconnect' : 'connect']: { id: token.id },
+        },
+      },
+    });
+  }
+
+  // ─── Comments ────────────────────────────────────────────────────────────────
+
+  async createComment(
+    token: UserTokenData,
+    postId: UUID,
+    dto: PostCommentCreateDto,
+  ): Promise<PostCommentDto> {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
+      select: { id: true },
+    });
+
+    if (null === post) throw new NotFoundException();
+
+    const comment = await this.prismaService.postComment.create({
+      data: {
+        content: dto.content,
+        post: { connect: { id: postId } },
+        user: { connect: { id: token.id } },
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profilePicture: true,
+          },
+        },
+      },
+    });
+
+    return { ...comment, createdAt: comment.createdAt.toISOString() };
+  }
+
+  async deleteComment(
+    token: UserTokenData,
+    postId: UUID,
+    commentId: UUID,
+  ): Promise<void> {
+    const comment = await this.prismaService.postComment.findUnique({
+      where: { id: commentId },
+      select: {
+        postId: true,
+        user: { select: { id: true } },
+      },
+    });
+
+    if (null === comment || comment.postId !== postId) {
+      throw new NotFoundException();
+    }
+
+    if (token.id !== comment.user.id) {
+      throw new ForbiddenException();
+    }
+
+    await this.prismaService.postComment.delete({ where: { id: commentId } });
   }
 }

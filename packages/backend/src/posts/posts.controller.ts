@@ -45,6 +45,8 @@ import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
 import { GetPostsQueryDto } from './entities/get-posts-list.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
+import { PostCommentCreateDto } from './dto/create-post-comment.dto.js';
+import { PostCommentDto } from './entities/post-comment.js';
 import { KeywordDataDto } from './entities/keyword-data.js';
 
 @Controller('posts')
@@ -57,6 +59,31 @@ import { KeywordDataDto } from './entities/keyword-data.js';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  // ─── Keywords ────────────────────────────────────────────────────────────────
+
+  @Get('keywords')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    type: KeywordDataDto,
+    isArray: true,
+    description: 'The list of keywords, filtered by most used to least used.',
+  })
+  async listKeywords(): Promise<KeywordDataDto[]> {
+    return await this.postsService.listKeywords();
+  }
+
+  // ─── Posts ───────────────────────────────────────────────────────────────────
+
+  @Get()
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    type: PostDataListDto,
+    description: 'The list of posts corresponding to the current page.',
+  })
+  async list(@Query() query: GetPostsQueryDto): Promise<PostDataList> {
+    return await this.postsService.list(query);
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiOkResponse({
@@ -67,16 +94,6 @@ export class PostsController {
   })
   async get(@Param('id') id: UUID): Promise<PostDataDto> {
     return await this.postsService.get(id);
-  }
-
-  @Get()
-  @UseGuards(AuthGuard)
-  @ApiOkResponse({
-    type: PostDataListDto,
-    description: 'The list of posts corresponding to the current page.',
-  })
-  async list(@Query() query: GetPostsQueryDto): Promise<PostDataList> {
-    return await this.postsService.list(query);
   }
 
   @Post()
@@ -207,9 +224,71 @@ export class PostsController {
     return await this.postsService.delete(token, id);
   }
 
-  @Get('keywords')
+  // ─── Reactions ───────────────────────────────────────────────────────────────
+
+  @Post(':id/reactions')
   @UseGuards(AuthGuard)
-  async listKeywords(): Promise<KeywordDataDto[]> {
-    return await this.postsService.listKeywords();
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'The ID of the post to react to.' })
+  @ApiNoContentResponse({ description: 'Reaction toggled successfully.' })
+  @ApiNotFoundResponse({ description: 'The given post ID resolves no post.' })
+  async toggleReaction(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+  ): Promise<void> {
+    const token = req['user'] as UserTokenData;
+    return await this.postsService.toggleReaction(token, id);
+  }
+
+  // ─── Comments ────────────────────────────────────────────────────────────────
+
+  @Post(':id/comments')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiParam({ name: 'id', description: 'The ID of the post to comment on.' })
+  @ApiBody({
+    type: PostCommentCreateDto,
+    description: 'The payload to create a comment.',
+  })
+  @ApiCreatedResponse({
+    type: PostCommentDto,
+    description: 'The comment has been created.',
+  })
+  @ApiBadRequestResponse({ description: 'The request provided bad body.' })
+  @ApiNotFoundResponse({ description: 'The given post ID resolves no post.' })
+  async createComment(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+    @Body() dto: PostCommentCreateDto,
+  ): Promise<PostCommentDto> {
+    const token = req['user'] as UserTokenData;
+    return await this.postsService.createComment(token, id, dto);
+  }
+
+  @Delete(':id/comments/:commentId')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'The ID of the post.' })
+  @ApiParam({
+    name: 'commentId',
+    description: 'The ID of the comment to delete.',
+  })
+  @ApiNoContentResponse({
+    description: 'The comment was deleted successfully.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The given post or comment ID resolves nothing.',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'The authenticated user does not have the permission to delete this comment.',
+  })
+  async deleteComment(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+    @Param('commentId') commentId: UUID,
+  ): Promise<void> {
+    const token = req['user'] as UserTokenData;
+    return await this.postsService.deleteComment(token, id, commentId);
   }
 }
