@@ -5,7 +5,7 @@
   import * as InputGroup from "$lib/shadcn/input-group";
   import * as Tabs from "$lib/shadcn/tabs/index.js";
   import { HashIcon, SearchIcon, TextAlignStartIcon, UserIcon } from "@lucide/svelte";
-  import UserLink from "./components/UserLink.svelte";
+  import UserLink from "$lib/components/UserLink.svelte";
   import Post from "$lib/components/Post.svelte";
 
   const tabs = [

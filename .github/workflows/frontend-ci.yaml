@@ -43,6 +43,10 @@ jobs:
         working-directory: ./packages/frontend
         run: pnpm run lint
 
+      - name: Run format check
+        working-directory: ./packages/frontend
+        run: pnpm run format:check
+
       - name: Run check
         working-directory: ./packages/frontend
         run: pnpm run check
