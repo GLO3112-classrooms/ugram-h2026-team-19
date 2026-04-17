@@ -3,7 +3,7 @@ export function formatKeywordsToMany(keywords: string) {
     .replace(/[^\w-_]+/g, " ")
     .trim()
     .split(" ")
-    .filter((keyword) => keyword.length);
+    .filter(Boolean);
 }
 
 export function formatKeywordsToSingle(keywords: string) {
