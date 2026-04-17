@@ -20,6 +20,8 @@
     queries.reduce((acc, { total, ...rest }) => (acc += Object.values(rest)[0].length), 0)
   );
   async function loadMore() {
+    const total = queries.at(-1)?.total;
+    if (total && total <= count) return;
     queries.push(await callback(queries.length * limit, limit));
   }
   onMount(loadMore);
