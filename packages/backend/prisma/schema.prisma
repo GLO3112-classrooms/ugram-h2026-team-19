@@ -47,7 +47,7 @@ model PostKeyword {
   id      String @id @default(uuid())
   value   String @unique
 
-  post    Post[] @relation("PostKeywords")
+  posts   Post[] @relation("PostKeywords")
 
   @@index([value])
   @@map("post_keyword")

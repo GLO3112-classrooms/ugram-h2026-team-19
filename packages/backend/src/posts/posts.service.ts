@@ -24,6 +24,7 @@ import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
 import { StaticService } from '../static/static.service.js';
 import { PostWhereInput } from '../prisma/generated/models/Post.js';
+import { KeywordDataDto } from './entities/keyword-data.js';
 
 @Injectable()
 export class PostsService {
@@ -284,5 +285,24 @@ export class PostsService {
     await this.prismaService.post.delete({
       where: { id, user: { id: token.id } },
     });
+  }
+
+  async listKeywords(): Promise<KeywordDataDto[]> {
+    const keywords = await this.prismaService.postKeyword.findMany({
+      select: {
+        value: true,
+        _count: {
+          select: { posts: true },
+        },
+      },
+      orderBy: {
+        posts: { _count: 'desc' },
+      },
+    });
+
+    return keywords.map((k: { value: string; _count: { posts: number } }) => ({
+      value: k.value,
+      count: k._count.posts,
+    }));
   }
 }

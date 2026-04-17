@@ -45,6 +45,7 @@ import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
 import { GetPostsQueryDto } from './entities/get-posts-list.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
+import { KeywordDataDto } from './entities/keyword-data.js';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -204,5 +205,11 @@ export class PostsController {
     const token = req['user'] as UserTokenData;
 
     return await this.postsService.delete(token, id);
+  }
+
+  @Get('keywords')
+  @UseGuards(AuthGuard)
+  async listKeywords(): Promise<KeywordDataDto[]> {
+    return await this.postsService.listKeywords();
   }
 }
