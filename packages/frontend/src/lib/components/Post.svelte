@@ -57,7 +57,7 @@
       {:else}
         <!-- TODO: add remote -->
         <form>
-          <button type="submit" class="cursor-pointer" aria-label="Like">
+          <button type="submit" class="cursor-pointer hover:text-red-500" aria-label="Like">
             <HeartIcon />
           </button>
         </form>
