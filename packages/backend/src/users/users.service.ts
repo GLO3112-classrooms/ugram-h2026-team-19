@@ -185,6 +185,7 @@ export class UsersService {
     const posts = await this.prismaService.post.findMany({
       where: {
         userId: token.id,
+        image: { not: { equals: '' } },
       },
       select: {
         id: true,
@@ -193,11 +194,9 @@ export class UsersService {
     });
 
     for (const post of posts) {
-      if (post.image) {
-        const url = new URL(post.image);
-        const key = url.pathname.substring('/static/images/'.length);
-        await this.s3Service.delete('images', key);
-      }
+      const url = new URL(post.image);
+      const key = url.pathname.substring('/static/images/'.length);
+      await this.s3Service.delete('images', key);
     }
 
     await this.prismaService.post.deleteMany({
