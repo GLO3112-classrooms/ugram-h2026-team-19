@@ -16,5 +16,6 @@ export * from './posts/schemas/post-data-list.schema.js';
 export * from './posts/schemas/created-post.schema.js';
 export * from './posts/schemas/post-create.schema.js';
 export * from './posts/schemas/post-image-upload.schema.js';
+export * from './posts/schemas/keyword-data.schema.js';
 
 export * from './health/schemas/health-status.schema.js';
