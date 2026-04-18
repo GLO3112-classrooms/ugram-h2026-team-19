@@ -63,7 +63,7 @@
 
 <div>
   {#each posts as post (post.id)}
-    <Post {...post} own={me?.id === post.user.id} />
+    <Post {post} own={me?.id === post.user.id} currentUser={me} />
   {/each}
 
   {#if error}
