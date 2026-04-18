@@ -3,9 +3,16 @@
   import * as Avatar from "$lib/shadcn/avatar";
   import { Button } from "$lib/shadcn/button";
   import { UserIcon } from "@lucide/svelte";
-  import type { UserPartialData } from "backend/schemas";
 
-  let { username, profilePicture, firstname, lastname, id }: UserPartialData = $props();
+  type Props = {
+    id: string;
+    username: string;
+    firstname?: string;
+    lastname?: string;
+    profilePicture: string;
+  };
+
+  let { username, profilePicture, firstname, lastname, id }: Props = $props();
 </script>
 
 <Button
@@ -21,7 +28,9 @@
   </Avatar.Root>
 
   <div class="flex flex-col items-start">
-    <p class="text-xs">{firstname} {lastname}</p>
+    {#if firstname && lastname}
+      <p class="text-xs">{firstname} {lastname}</p>
+    {/if}
     <p class="font-bold">{username}</p>
   </div>
 </Button>
