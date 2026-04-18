@@ -68,7 +68,7 @@
       <p class="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
       {#if own}
         <a href={resolve(`/update/${post.id}`)}>
-          <Button variant="ghost" size="icon" aria-label="Submit">
+          <Button variant="ghost" size="icon" aria-label="Edit post">
             <PencilIcon />
           </Button>
         </a>
@@ -78,7 +78,6 @@
   <!-- `alt` is empty because both non-present or non-empty trigger a warning -->
   <img class="w-full rounded-sm" src={post.image} alt="" />
   <div class="flex justify-between">
-    <!-- TODO: replace placeholder data with actual one -->
     <div class="flex items-center gap-1">
       <button
         type="button"
