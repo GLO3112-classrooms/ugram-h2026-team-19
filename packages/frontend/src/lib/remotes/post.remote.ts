@@ -1,17 +1,18 @@
-import * as z from "zod";
-import { query, form, getRequestEvent, command } from "$app/server";
+import { command, form, getRequestEvent, query } from "$app/server";
 import { env } from "$env/dynamic/private";
+import { createPostSchema } from "$lib/schemas/createPost.schema";
 import { apiFetch } from "$lib/server/api";
+import { formatKeywordsToMany, formatKeywordsToSingle } from "$lib/utils/keywords";
+import { error, invalid, redirect } from "@sveltejs/kit";
 import {
+  type KeywordData,
   type PostComment,
   type PostData,
   type PostDataList,
   getPostsQuerySchema
 } from "backend/schemas";
-import { createPostSchema } from "$lib/schemas/createPost.schema";
-import { error, invalid, redirect } from "@sveltejs/kit";
-import { getUsers } from "$lib/remotes/user.remote";
-import { formatKeywordsToMany, formatKeywordsToSingle } from "$lib/utils/keywords";
+import * as z from "zod";
+import { getUsers } from "./user.remote";
 
 async function getMentionId(mention: string) {
   const { users } = await getUsers({ search: mention, limit: 1 });
@@ -248,3 +249,21 @@ export const commentPost = command(
     }
   }
 );
+
+export const getKeywords = query<KeywordData[]>(async () => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const response = await apiFetch("/posts/keywords", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 200:
+      return await response.json();
+    case 401:
+      return redirect(303, "/signin");
+
+    default:
+      return error(500, (await response.text()) || "Something went wrong");
+  }
+});

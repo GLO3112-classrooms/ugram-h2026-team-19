@@ -103,7 +103,7 @@
   </div>
   <p>{post.description}</p>
   <p class="flex flex-wrap space-x-1">
-    {#each post.keywords as keyword (keyword)}
+    {#each post.keywords as { value: keyword } (keyword)}
       <span class="text-sm text-cyan-600">#{keyword}</span>
     {/each}
   </p>

@@ -33,7 +33,7 @@
               <img class="max-h-64 w-full rounded-sm object-cover" src={post.image} alt="" />
               <input {...updatePost.fields.id.as("hidden", post.id)} />
               <Description value={post.description} />
-              <Keywords value={post.keywords.join(" ")} />
+              <Keywords value={post.keywords.map((keyword) => keyword.value).join(" ")} />
               <Mention value={post.mentions[0]?.username ?? ""} />
               <Submit />
               <Delete id={post.id} />
