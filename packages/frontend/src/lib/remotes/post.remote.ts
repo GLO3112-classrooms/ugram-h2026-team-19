@@ -2,7 +2,12 @@ import * as z from "zod";
 import { query, form, getRequestEvent, command } from "$app/server";
 import { env } from "$env/dynamic/private";
 import { apiFetch } from "$lib/server/api";
-import { type PostData, type PostDataList, getPostsQuerySchema } from "backend/schemas";
+import {
+  type PostComment,
+  type PostData,
+  type PostDataList,
+  getPostsQuerySchema
+} from "backend/schemas";
 import { createPostSchema } from "$lib/schemas/createPost.schema";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { getUsers } from "$lib/remotes/user.remote";
@@ -203,3 +208,32 @@ export const likePost = command(z.uuid(), async (id) => {
       return error(500, (await response.text()) || "Something went wrong");
   }
 });
+
+export const commentPost = command(
+  z.object({ id: z.uuid(), content: z.string().trim().min(1) }),
+  async ({ id, content }) => {
+    const token = getRequestEvent().cookies.get("token");
+
+    const response = await apiFetch(`/posts/${id}/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    });
+
+    switch (response.status) {
+      case 201:
+        return { success: true, comment: (await response.json()) as PostComment } as const;
+      case 400:
+        return invalid(...(await response.json()).errors);
+      case 401:
+        return { success: false, redirect: "/signin" } as const;
+      case 404:
+        return { success: false, message: "Post not found" } as const;
+      default:
+        return error(500, (await response.text()) || "Something went wrong");
+    }
+  }
+);
