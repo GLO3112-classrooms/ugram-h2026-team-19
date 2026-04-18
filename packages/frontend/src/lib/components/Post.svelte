@@ -27,9 +27,10 @@
 
     isLiking = true;
     const wasLiked = likedByMe;
-    const result = await likePost(post.id);
 
     try {
+      const result = await likePost(post.id);
+
       if (!result.success) {
         if (result.redirect) await goto(resolve(result.redirect));
         return;

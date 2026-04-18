@@ -36,23 +36,27 @@
     isSubmitting = true;
     errorMessage = null;
 
-    try {
-      const result = await commentPost({ id: postId, content: trimmedContent });
-      if (!result.success) {
-        if (result.redirect) {
-          await goto(resolve(result.redirect));
+    await commentPost({ id: postId, content: trimmedContent })
+      .then(async (result) => {
+        if (!result.success) {
+          if (result.redirect) {
+            await goto(resolve(result.redirect));
+            return;
+          }
+
+          errorMessage = result.message ?? "Something went wrong";
           return;
         }
 
-        errorMessage = result.message ?? "Something went wrong";
-        return;
-      }
-
-      onCommentCreated?.(result.comment);
-      content = "";
-    } finally {
-      isSubmitting = false;
-    }
+        onCommentCreated?.(result.comment);
+        content = "";
+      })
+      .catch(() => {
+        errorMessage = "Network error. Please try again.";
+      })
+      .finally(() => {
+        isSubmitting = false;
+      });
   }
 </script>
 
