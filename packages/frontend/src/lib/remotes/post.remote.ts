@@ -226,8 +226,19 @@ export const commentPost = command(
     switch (response.status) {
       case 201:
         return { success: true, comment: (await response.json()) as PostComment } as const;
-      case 400:
-        return { success: false, errors: (await response.json()).errors } as const;
+      case 400: {
+        const body = (await response.json()) as {
+          errors?: unknown;
+          message?: string;
+        };
+        return {
+          success: false,
+          message:
+            body.message ||
+            "Unable to add comment. Please fix the highlighted errors and try again.",
+          errors: body.errors
+        } as const;
+      }
       case 401:
         return { success: false, redirect: "/signin" } as const;
       case 404:
