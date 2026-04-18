@@ -84,6 +84,7 @@
         class="cursor-pointer {likedByMe ? '' : 'hover:text-red-500'}"
         aria-label={likedByMe ? "Dislike" : "Like"}
         onclick={handleLike}
+        disabled={isLiking}
       >
         {#if likedByMe}
           <HeartIcon color="red" fill="red" />
