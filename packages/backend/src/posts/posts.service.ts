@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '../prisma/generated/client.js';
 import { S3Service } from '../s3/s3.service.js';
 import { BadRequestException } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
@@ -76,22 +77,7 @@ const POST_SELECT = {
 } as const;
 
 function mapPostData(
-  post: {
-    id: string;
-    description: string;
-    image: string;
-    createdAt: Date;
-    keywords: { value: string }[];
-    mentions: { id: string; username: string; profilePicture: string }[];
-    reactions: { id: string; username: string; profilePicture: string }[];
-    comments: {
-      id: string;
-      content: string;
-      createdAt: Date;
-      user: { id: string; username: string; profilePicture: string };
-    }[];
-    user: { id: string; username: string; profilePicture: string };
-  },
+  post: Prisma.PostGetPayload<{ select: typeof POST_SELECT }>,
   currentUserId?: string,
 ) {
   return {
