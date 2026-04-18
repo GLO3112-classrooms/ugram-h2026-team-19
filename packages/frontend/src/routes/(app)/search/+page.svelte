@@ -6,6 +6,7 @@
   import { getKeywords, getPosts } from "$lib/remotes/post.remote";
   import { getMe, getUsers } from "$lib/remotes/user.remote";
   import Button from "$lib/shadcn/button/button.svelte";
+  import { getPosts } from "$lib/remotes/post.remote";
   import * as InputGroup from "$lib/shadcn/input-group";
   import { ScrollArea } from "$lib/shadcn/scroll-area/index.js";
   import Separator from "$lib/shadcn/separator/separator.svelte";
