@@ -228,7 +228,7 @@ export const commentPost = command(
       case 201:
         return { success: true, comment: (await response.json()) as PostComment } as const;
       case 400:
-        return invalid(...(await response.json()).errors);
+        return { success: false, errors: (await response.json()).errors } as const;
       case 401:
         return { success: false, redirect: "/signin" } as const;
       case 404:
