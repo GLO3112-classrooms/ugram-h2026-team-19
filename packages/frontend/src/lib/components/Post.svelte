@@ -5,7 +5,7 @@
   import { Button } from "$lib/shadcn/button";
   import { likePost } from "$lib/remotes/post.remote";
   import Avatar from "./Avatar.svelte";
-  import type { PostData, PostUser } from "backend/schemas";
+  import type { PostComment, PostData, PostUser } from "backend/schemas";
   import DialogLikers from "$lib/components/dialogs/DialogLikers.svelte";
   import DialogComments from "$lib/components/dialogs/DialogComments.svelte";
 
@@ -16,38 +16,44 @@
   }
 
   let { post, own, currentUser }: Props = $props();
-
-  const initialLikedByMe = post.likedByMe;
-  const initialReactionsCount = post.reactions.length;
-  const initialLikers = post.reactions;
-
-  let likedByMe = $state(initialLikedByMe);
-  let reactionsCount = $state(initialReactionsCount);
-  let likers = $state(initialLikers);
+  let likedByMe = $state(post.likedByMe);
+  let reactionsCount = $state(post.reactions.length);
+  let likers = $state<PostUser[]>([...post.reactions]);
+  let comments = $state<PostComment[]>([...post.comments]);
+  let isLiking = $state(false);
 
   async function handleLike() {
+    if (isLiking) return;
+
+    isLiking = true;
     const wasLiked = likedByMe;
     const result = await likePost(post.id);
 
-    if (!result.success) {
-      if (result.redirect) await goto(resolve(result.redirect));
-      return;
+    try {
+      if (!result.success) {
+        if (result.redirect) await goto(resolve(result.redirect));
+        return;
+      }
+
+      likedByMe = !likedByMe;
+      reactionsCount += wasLiked ? -1 : 1;
+
+      const me = {
+        id: currentUser.id,
+        username: currentUser.username,
+        profilePicture: currentUser.profilePicture
+      };
+
+      likers = wasLiked
+        ? likers.filter((liker) => liker.id !== me.id)
+        : [...likers.filter((liker) => liker.id !== me.id), me];
+    } finally {
+      isLiking = false;
     }
+  }
 
-    likedByMe = !likedByMe;
-    reactionsCount += wasLiked ? -1 : 1;
-
-    if (!currentUser) return;
-
-    const me = {
-      id: currentUser.id,
-      username: currentUser.username,
-      profilePicture: currentUser.profilePicture
-    };
-
-    likers = wasLiked
-      ? likers.filter((liker) => liker.id !== me.id)
-      : [...likers.filter((liker) => liker.id !== me.id), me];
+  function handleCommentCreated(comment: PostComment) {
+    comments = [comment, ...comments];
   }
 </script>
 
@@ -89,8 +95,8 @@
         <DialogLikers {likers}>{reactionsCount}</DialogLikers>
       {/if}
     </div>
-    <DialogComments comments={post.comments}>
-      {post.comments.length}
+    <DialogComments postId={post.id} {comments} onCommentCreated={handleCommentCreated}>
+      {comments.length}
       <MessageCircleIcon />
     </DialogComments>
   </div>
