@@ -1,12 +1,13 @@
 <script module lang="ts">
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import { getPosts } from "$lib/remotes/post.remote";
-  import { getUsers } from "$lib/remotes/user.remote";
+  import { getMe, getUsers } from "$lib/remotes/user.remote";
   import * as InputGroup from "$lib/shadcn/input-group";
   import * as Tabs from "$lib/shadcn/tabs/index.js";
   import { HashIcon, SearchIcon, TextAlignStartIcon, UserIcon } from "@lucide/svelte";
   import UserLink from "$lib/components/UserLink.svelte";
   import Post from "$lib/components/Post.svelte";
+  import Code from "$lib/components/Code.svelte";
 
   const tabs = [
     {
@@ -28,7 +29,7 @@
 </script>
 
 <script lang="ts">
-  import Code from "$lib/components/Code.svelte";
+  const me = await getMe();
 
   let value: string = $state("");
   let tab: (typeof tabs)[number]["label"] = $state(tabs[0].label);
@@ -73,7 +74,7 @@
           <InfiniteScroll callback={(skip, limit) => getPosts({ description: value, skip, limit })}>
             {#snippet children({ posts })}
               {#each posts as post (post.id)}
-                <Post {...post} own={false} />
+                <Post {post} own={false} currentUser={me} />
               {/each}
             {/snippet}
           </InfiniteScroll>
@@ -92,7 +93,7 @@
           <InfiniteScroll callback={(skip, limit) => getPosts({ keywords: value, skip, limit })}>
             {#snippet children({ posts })}
               {#each posts as post (post.id)}
-                <Post {...post} own={false} />
+                <Post {post} own={false} currentUser={me} />
               {/each}
             {/snippet}
           </InfiniteScroll>
