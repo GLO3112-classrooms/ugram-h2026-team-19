@@ -75,6 +75,38 @@ const POST_SELECT = {
   },
 } as const;
 
+function mapPostData(
+  post: {
+    id: string;
+    description: string;
+    image: string;
+    createdAt: Date;
+    keywords: { value: string }[];
+    mentions: { id: string; username: string; profilePicture: string }[];
+    reactions: { id: string; username: string; profilePicture: string }[];
+    comments: {
+      id: string;
+      content: string;
+      createdAt: Date;
+      user: { id: string; username: string; profilePicture: string };
+    }[];
+    user: { id: string; username: string; profilePicture: string };
+  },
+  currentUserId?: string,
+) {
+  return {
+    ...post,
+    likedByMe: currentUserId
+      ? post.reactions.some((reaction) => reaction.id === currentUserId)
+      : false,
+    createdAt: post.createdAt.toISOString(),
+    comments: post.comments.map((c) => ({
+      ...c,
+      createdAt: c.createdAt.toISOString(),
+    })),
+  };
+}
+
 @Injectable()
 export class PostsService {
   constructor(
@@ -106,7 +138,7 @@ export class PostsService {
 
   // ─── Posts ───────────────────────────────────────────────────────────────────
 
-  async get(id: UUID) {
+  async get(id: UUID, currentUserId?: string) {
     const post = await this.prismaService.post.findUnique({
       where: { id },
       select: POST_SELECT,
@@ -116,17 +148,14 @@ export class PostsService {
       throw new NotFoundException();
     }
 
-    return {
-      ...post,
-      createdAt: post.createdAt.toISOString(),
-      comments: post.comments.map((c) => ({
-        ...c,
-        createdAt: c.createdAt.toISOString(),
-      })),
-    };
+    return mapPostData(post, currentUserId);
   }
 
-  async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
+  async list(
+    query: GetPostsQuery,
+    fromUserID?: string,
+    currentUserId?: string,
+  ): Promise<PostDataList> {
     const where: PostWhereInput = {
       ...(fromUserID ? { user: { id: fromUserID } } : {}),
       ...(query.description
@@ -157,14 +186,7 @@ export class PostsService {
     ]);
 
     return {
-      posts: posts.map((p) => ({
-        ...p,
-        createdAt: p.createdAt.toISOString(),
-        comments: p.comments.map((c) => ({
-          ...c,
-          createdAt: c.createdAt.toISOString(),
-        })),
-      })),
+      posts: posts.map((p) => mapPostData(p, currentUserId)),
       total,
     };
   }
