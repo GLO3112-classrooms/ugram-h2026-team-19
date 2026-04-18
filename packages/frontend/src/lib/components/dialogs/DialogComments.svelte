@@ -1,20 +1,13 @@
 <script module lang="ts">
   import type { Snippet } from "svelte";
   import { resolve } from "$app/paths";
-  import type { UserPartialData } from "backend/schemas";
+  import type { PostComment } from "backend/schemas";
   import * as Dialog from "$lib/shadcn/dialog";
   import { Button } from "$lib/shadcn/button";
   import { Input } from "$lib/shadcn/input";
 
-  // TODO: replace with backend type
-  type Comment = {
-    id: string;
-    comment: string;
-    user: UserPartialData;
-  };
-
   interface Props {
-    comments: Comment[];
+    comments: PostComment[];
     children: Snippet;
   }
 </script>
@@ -38,7 +31,7 @@
             href={resolve(`/user/${comment.user.id}`)}
             class="text-xs text-gray-300 hover:underline">{comment.user.username}</a
           >
-          {comment.comment}
+          {comment.content}
         </p>
       {/each}
     </div>
