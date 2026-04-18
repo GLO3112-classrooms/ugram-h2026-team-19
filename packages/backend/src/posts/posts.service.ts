@@ -238,7 +238,7 @@ export class PostsService {
     const uploadStream = file.file.pipe(sizeValidator);
 
     const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
-    const key = path.join('images', token.id, sanitizedFilename);
+    const key = path.join('images', postId, sanitizedFilename);
     await this.s3Service.pushMultipart(
       this.staticService.getBucket(),
       key,
@@ -323,8 +323,8 @@ export class PostsService {
 
     if (post.image) {
       const url = new URL(post.image);
-      const imageKey = url.pathname.substring('/static/images/'.length);
-      await this.s3Service.delete('images', imageKey);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     await this.prismaService.post.delete({

@@ -177,9 +177,8 @@ export class UsersService {
 
     if (user.profilePicture) {
       const url = new URL(user.profilePicture);
-      const filename = url.pathname.substring('/static/avatars/'.length);
-      const key = path.join('avatars', token.id, filename);
-      await this.s3Service.delete(this.staticService.getBucket(), key);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     const posts = await this.prismaService.post.findMany({
@@ -195,8 +194,8 @@ export class UsersService {
 
     for (const post of posts) {
       const url = new URL(post.image);
-      const key = url.pathname.substring('/static/images/'.length);
-      await this.s3Service.delete('images', key);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     await this.prismaService.post.deleteMany({
