@@ -1,11 +1,11 @@
 <script module lang="ts">
   import type { Snippet } from "svelte";
-  import type { UserPartialData } from "backend/schemas";
+  import type { PostUser } from "backend/schemas";
   import * as Dialog from "$lib/shadcn/dialog";
   import UserLink from "$lib/components/UserLink.svelte";
 
   interface Props {
-    likers: UserPartialData[];
+    likers: PostUser[];
     children: Snippet;
   }
 </script>
