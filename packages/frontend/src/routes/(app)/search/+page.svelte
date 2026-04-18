@@ -1,11 +1,14 @@
 <script module lang="ts">
+  import Code from "$lib/components/Code.svelte";
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Post from "$lib/components/Post.svelte";
   import UserLink from "$lib/components/UserLink.svelte";
-  import { getPosts } from "$lib/remotes/post.remote";
-  import { getUsers } from "$lib/remotes/user.remote";
+  import { getKeywords, getPosts } from "$lib/remotes/post.remote";
+  import { getMe, getUsers } from "$lib/remotes/user.remote";
+  import Button from "$lib/shadcn/button/button.svelte";
   import * as InputGroup from "$lib/shadcn/input-group";
   import { ScrollArea } from "$lib/shadcn/scroll-area/index.js";
+  import Separator from "$lib/shadcn/separator/separator.svelte";
   import * as Tabs from "$lib/shadcn/tabs/index.js";
   import { HashIcon, SearchIcon, TextAlignStartIcon, UserIcon } from "@lucide/svelte";
 
@@ -29,10 +32,7 @@
 </script>
 
 <script lang="ts">
-  import Code from "$lib/components/Code.svelte";
-  import { getKeywords } from "$lib/remotes/post.remote";
-  import Button from "$lib/shadcn/button/button.svelte";
-  import Separator from "$lib/shadcn/separator/separator.svelte";
+  const me = await getMe();
 
   let value: string = $state("");
   let tab: (typeof tabs)[number]["label"] = $state(tabs[0].label);
@@ -77,11 +77,7 @@
           <InfiniteScroll callback={(skip, limit) => getPosts({ description: value, skip, limit })}>
             {#snippet children({ posts })}
               {#each posts as post (post.id)}
-                <Post
-                  {...post}
-                  keywords={post.keywords.map((keyword) => keyword.value)}
-                  own={false}
-                />
+                <Post {post} own={false} currentUser={me} />
               {/each}
             {/snippet}
           </InfiniteScroll>
@@ -119,11 +115,7 @@
           <InfiniteScroll callback={(skip, limit) => getPosts({ keywords: value, skip, limit })}>
             {#snippet children({ posts })}
               {#each posts as post (post.id)}
-                <Post
-                  {...post}
-                  keywords={post.keywords.map((keyword) => keyword.value)}
-                  own={false}
-                />
+                <Post {post} own={false} currentUser={me} />
               {/each}
             {/snippet}
           </InfiniteScroll>

@@ -189,6 +189,26 @@ export const deletePost = command(z.uuid(), async (id) => {
   }
 });
 
+export const likePost = command(z.uuid(), async (id) => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const response = await apiFetch(`/posts/${id}/reactions`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 204:
+      return { success: true } as const;
+    case 401:
+      return { success: false, redirect: "/signin" } as const;
+    case 404:
+      return { success: false, message: "Post not found" } as const;
+    default:
+      return error(500, (await response.text()) || "Something went wrong");
+  }
+});
+
 export const getKeywords = query<KeywordData[]>(async () => {
   const token = getRequestEvent().cookies.get("token");
 
