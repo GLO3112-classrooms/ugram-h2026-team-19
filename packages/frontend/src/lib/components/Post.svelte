@@ -79,7 +79,13 @@
   <div class="flex justify-between">
     <!-- TODO: replace placeholder data with actual one -->
     <div class="flex items-center gap-1">
-      <button type="button" class="cursor-pointer {likedByMe ? '' : 'hover:text-red-500'}" aria-label={likedByMe ? "Dislike" : "Like"} onclick={handleLike} disabled={isLiking}>
+      <button
+        type="button"
+        class="cursor-pointer {likedByMe ? '' : 'hover:text-red-500'}"
+        aria-label={likedByMe ? "Dislike" : "Like"}
+        onclick={handleLike}
+        disabled={isLiking}
+      >
         {#if likedByMe}
           <HeartIcon color="red" fill="red" />
         {:else}
@@ -87,7 +93,7 @@
         {/if}
       </button>
       {#if reactionsCount}
-        <DialogLikers likers={likers}>{reactionsCount}</DialogLikers>
+        <DialogLikers {likers}>{reactionsCount}</DialogLikers>
       {/if}
     </div>
     <DialogComments postId={post.id} {comments} onCommentCreated={handleCommentCreated}>
