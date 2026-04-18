@@ -80,8 +80,12 @@ export class PostsController {
     type: PostDataListDto,
     description: 'The list of posts corresponding to the current page.',
   })
-  async list(@Query() query: GetPostsQueryDto): Promise<PostDataList> {
-    return await this.postsService.list(query);
+  async list(
+    @Req() request: FastifyRequest,
+    @Query() query: GetPostsQueryDto,
+  ): Promise<PostDataList> {
+    const token = request['user'] as UserTokenData;
+    return await this.postsService.list(query, query.userId, token.id);
   }
 
   @Get(':id')
@@ -92,8 +96,12 @@ export class PostsController {
   @ApiNotFoundResponse({
     description: 'The given post ID resolves no post.',
   })
-  async get(@Param('id') id: UUID): Promise<PostDataDto> {
-    return await this.postsService.get(id);
+  async get(
+    @Req() request: FastifyRequest,
+    @Param('id') id: UUID,
+  ): Promise<PostDataDto> {
+    const token = request['user'] as UserTokenData;
+    return await this.postsService.get(id, token.id);
   }
 
   @Post()

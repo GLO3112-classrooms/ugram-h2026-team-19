@@ -43,6 +43,9 @@ export const postDataSchema = z.object({
   reactions: z.array(postUserSchema).meta({
     description: 'The users who reacted to the post',
   }),
+  likedByMe: z.boolean().meta({
+    description: 'Whether the authenticated user reacted to this post',
+  }),
   comments: z.array(postCommentSchema).meta({
     description: 'The post comments',
   }),
@@ -57,5 +60,6 @@ export const postDataSchema = z.object({
   }),
 });
 
+export type PostUser = z.infer<typeof postUserSchema>;
 export type PostComment = z.infer<typeof postCommentSchema>;
 export type PostData = z.infer<typeof postDataSchema>;

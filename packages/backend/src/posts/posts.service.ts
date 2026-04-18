@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '../prisma/generated/client.js';
 import { S3Service } from '../s3/s3.service.js';
 import { BadRequestException } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
@@ -75,6 +76,23 @@ const POST_SELECT = {
   },
 } as const;
 
+function mapPostData(
+  post: Prisma.PostGetPayload<{ select: typeof POST_SELECT }>,
+  currentUserId?: string,
+) {
+  return {
+    ...post,
+    likedByMe: currentUserId
+      ? post.reactions.some((reaction) => reaction.id === currentUserId)
+      : false,
+    createdAt: post.createdAt.toISOString(),
+    comments: post.comments.map((c) => ({
+      ...c,
+      createdAt: c.createdAt.toISOString(),
+    })),
+  };
+}
+
 @Injectable()
 export class PostsService {
   constructor(
@@ -106,7 +124,7 @@ export class PostsService {
 
   // ─── Posts ───────────────────────────────────────────────────────────────────
 
-  async get(id: UUID) {
+  async get(id: UUID, currentUserId?: string) {
     const post = await this.prismaService.post.findUnique({
       where: { id },
       select: POST_SELECT,
@@ -116,17 +134,14 @@ export class PostsService {
       throw new NotFoundException();
     }
 
-    return {
-      ...post,
-      createdAt: post.createdAt.toISOString(),
-      comments: post.comments.map((c) => ({
-        ...c,
-        createdAt: c.createdAt.toISOString(),
-      })),
-    };
+    return mapPostData(post, currentUserId);
   }
 
-  async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
+  async list(
+    query: GetPostsQuery,
+    fromUserID?: string,
+    currentUserId?: string,
+  ): Promise<PostDataList> {
     const where: PostWhereInput = {
       ...(fromUserID ? { user: { id: fromUserID } } : {}),
       ...(query.description
@@ -157,14 +172,7 @@ export class PostsService {
     ]);
 
     return {
-      posts: posts.map((p) => ({
-        ...p,
-        createdAt: p.createdAt.toISOString(),
-        comments: p.comments.map((c) => ({
-          ...c,
-          createdAt: c.createdAt.toISOString(),
-        })),
-      })),
+      posts: posts.map((p) => mapPostData(p, currentUserId)),
       total,
     };
   }
