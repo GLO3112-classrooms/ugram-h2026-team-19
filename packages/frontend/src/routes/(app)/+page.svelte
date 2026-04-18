@@ -63,7 +63,11 @@
 
 <div>
   {#each posts as post (post.id)}
-    <Post {...post} own={me?.id === post.user.id} />
+    <Post
+      {...post}
+      keywords={post.keywords.map((keyword) => keyword.value)}
+      own={me?.id === post.user.id}
+    />
   {/each}
 
   {#if error}

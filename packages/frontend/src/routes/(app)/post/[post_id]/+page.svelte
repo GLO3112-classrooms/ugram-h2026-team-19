@@ -16,7 +16,7 @@
     user={post.user}
     image={post.image}
     description={post.description}
-    keywords={post.keywords}
+    keywords={post.keywords.map((keyword) => keyword.value)}
     mentions={post.mentions}
     createdAt={post.createdAt}
     own={me?.id === post.user.id}

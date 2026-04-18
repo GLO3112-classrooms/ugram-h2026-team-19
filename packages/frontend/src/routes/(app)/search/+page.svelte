@@ -73,7 +73,11 @@
           <InfiniteScroll callback={(skip, limit) => getPosts({ description: value, skip, limit })}>
             {#snippet children({ posts })}
               {#each posts as post (post.id)}
-                <Post {...post} own={false} />
+                <Post
+                  {...post}
+                  keywords={post.keywords.map((keyword) => keyword.value)}
+                  own={false}
+                />
               {/each}
             {/snippet}
           </InfiniteScroll>
@@ -92,7 +96,11 @@
           <InfiniteScroll callback={(skip, limit) => getPosts({ keywords: value, skip, limit })}>
             {#snippet children({ posts })}
               {#each posts as post (post.id)}
-                <Post {...post} own={false} />
+                <Post
+                  {...post}
+                  keywords={post.keywords.map((keyword) => keyword.value)}
+                  own={false}
+                />
               {/each}
             {/snippet}
           </InfiniteScroll>
