@@ -1,12 +1,13 @@
 <script module lang="ts">
   import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
+  import Post from "$lib/components/Post.svelte";
+  import UserLink from "$lib/components/UserLink.svelte";
   import { getPosts } from "$lib/remotes/post.remote";
   import { getUsers } from "$lib/remotes/user.remote";
   import * as InputGroup from "$lib/shadcn/input-group";
+  import { ScrollArea } from "$lib/shadcn/scroll-area/index.js";
   import * as Tabs from "$lib/shadcn/tabs/index.js";
   import { HashIcon, SearchIcon, TextAlignStartIcon, UserIcon } from "@lucide/svelte";
-  import UserLink from "$lib/components/UserLink.svelte";
-  import Post from "$lib/components/Post.svelte";
 
   const tabs = [
     {
@@ -29,6 +30,9 @@
 
 <script lang="ts">
   import Code from "$lib/components/Code.svelte";
+  import { getKeywords } from "$lib/remotes/post.remote";
+  import Button from "$lib/shadcn/button/button.svelte";
+  import Separator from "$lib/shadcn/separator/separator.svelte";
 
   let value: string = $state("");
   let tab: (typeof tabs)[number]["label"] = $state(tabs[0].label);
@@ -87,11 +91,30 @@
 
     {#if tab === "keyword"}
       <Tabs.Content value="keyword">
-        <p class="mb-1 text-xs text-muted-foreground">
-          All non-alphanumeric characters will be ignored, except for the dash (<Code>-</Code>) and
-          the underscore (<Code>_</Code>). Spaces are ignored too, so <Code>key word</Code> will search
-          for <Code>keyword</Code> for example.
-        </p>
+        <div class="flex flex-col gap-2">
+          <p class="mb-1 text-xs text-muted-foreground">
+            All non-alphanumeric characters will be ignored, except for the dash (<Code>-</Code>)
+            and the underscore (<Code>_</Code>). Spaces are ignored too, so <Code>key word</Code> will
+            search for <Code>keyword</Code> for example.
+          </p>
+
+          <ScrollArea orientation="horizontal">
+            <div class="flex items-center gap-2">
+              <p class="text-xs">Trending<br />keywords</p>
+              {#each await getKeywords() as { value: keyword } (keyword)}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onclick={() => (value = keyword)}
+                  class="cursor-pointer rounded-2xl">{keyword}</Button
+                >
+              {/each}
+            </div>
+          </ScrollArea>
+
+          <Separator />
+        </div>
+
         {#key value}
           <InfiniteScroll callback={(skip, limit) => getPosts({ keywords: value, skip, limit })}>
             {#snippet children({ posts })}
