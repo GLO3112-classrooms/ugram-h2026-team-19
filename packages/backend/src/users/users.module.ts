@@ -5,9 +5,16 @@ import { PrismaModule } from '../prisma/prisma.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { S3Module } from '../s3/s3.module.js';
 import { StaticModule } from '../static/static.module.js';
+import { NotificationsModule } from '../notifications/notifications.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, S3Module, StaticModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    S3Module,
+    StaticModule,
+    NotificationsModule,
+  ],
   controllers: [UsersController],
   providers: [UsersService],
 })

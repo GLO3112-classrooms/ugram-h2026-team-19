@@ -38,6 +38,7 @@ import {
   UserDataListQueryDto,
 } from './entities/user-data-list.js';
 import { UserPartialDataDto } from './entities/user-partial-data.js';
+import { type UUID } from 'node:crypto';
 
 @Controller('users')
 @ApiTags('Users')
@@ -171,5 +172,38 @@ export class UsersController {
     }
 
     return await this.usersService.uploadAvatar(token, file);
+  }
+
+  @Get('me/notifications')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({ description: 'List of notifications for the current user.' })
+  async listMyNotifications(@Req() req: FastifyRequest) {
+    const token = req['user'] as UserTokenDataDto;
+    return this.usersService.listMyNotifications(token);
+  }
+
+  @Patch('me/notifications/:id/read')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the notification to mark as read.',
+  })
+  @ApiNoContentResponse({ description: 'Notification marked as read.' })
+  async markNotificationAsRead(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+  ) {
+    const token = req['user'] as UserTokenDataDto;
+    return this.usersService.markNotificationAsRead(token, id);
+  }
+
+  @Patch('me/notifications/read-all')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ description: 'All notifications marked as read.' })
+  async markAllNotificationsAsRead(@Req() req: FastifyRequest) {
+    const token = req['user'] as UserTokenDataDto;
+    return this.usersService.markAllNotificationsAsRead(token);
   }
 }
