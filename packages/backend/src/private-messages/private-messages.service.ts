@@ -13,9 +13,10 @@ export class PrivateMessagesService {
     private readonly messagesGateway: PrivateMessagesGateway,
   ) {}
 
-  async getMessageWith(
+  async getMessagesWith(
     me: string,
     userId: string,
+    since: string,
   ): Promise<PrivateMessageList> {
     const mySentMessages = await this.prismaService.privateMessage.findMany({
       select: {
@@ -28,6 +29,7 @@ export class PrivateMessagesService {
       where: {
         fromUserId: me,
         toUserId: userId,
+        createdAt: { gte: new Date(since) },
       },
     });
 
@@ -42,6 +44,7 @@ export class PrivateMessagesService {
       where: {
         fromUserId: userId,
         toUserId: me,
+        createdAt: { gte: new Date(since) },
       },
     });
 
