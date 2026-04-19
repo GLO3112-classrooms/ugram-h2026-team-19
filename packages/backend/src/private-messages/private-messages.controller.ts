@@ -50,10 +50,13 @@ export class PrivateMessagesController {
   })
   async list(
     @Req() request: FastifyRequest,
-    @Query('since') since: string = '1970-01-01T00:00:00.000Z',
+    @Query('since') since?: string,
   ): Promise<PrivateMessageListDto> {
     const token = request['user'] as UserTokenData;
-    return await this.privateMessagesService.list(token.id, since);
+    return await this.privateMessagesService.list(
+      token.id,
+      since ?? '1970-01-01T00:00:00.000Z',
+    );
   }
 
   @Get('/:id')
@@ -70,9 +73,14 @@ export class PrivateMessagesController {
   async get(
     @Req() request: FastifyRequest,
     @Param('id') userId: string,
+    @Query('since') since?: string,
   ): Promise<PrivateMessageListDto> {
     const token = request['user'] as UserTokenData;
-    return await this.privateMessagesService.getMessageWith(token.id, userId);
+    return await this.privateMessagesService.getMessagesWith(
+      token.id,
+      userId,
+      since ?? '1970-01-01T00:00:00.000Z',
+    );
   }
 
   @Post()
