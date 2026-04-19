@@ -5,6 +5,7 @@
   import { getMe } from "$lib/remotes/user.remote";
   import { getPosts } from "$lib/remotes/post.remote";
   import Post from "$lib/components/Post.svelte";
+  import AppBar from "./components/AppBar.svelte";
 
   const me = await getMe();
 
@@ -62,6 +63,8 @@
 </script>
 
 <div>
+  <AppBar />
+
   {#each posts as post (post.id)}
     <Post {post} own={me?.id === post.user.id} currentUser={me} />
   {/each}
