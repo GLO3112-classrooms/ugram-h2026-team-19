@@ -24,6 +24,8 @@ model User {
   reactedToPosts   Post[]        @relation("PostReactions")
   comments         PostComment[]
 
+  sentMessages      PrivateMessage[]  @relation("Sender")
+  receivedMessages  PrivateMessage[]  @relation("Receiver")
   @@map("user")
 }
 
@@ -69,4 +71,21 @@ model PostComment {
   @@index([postId])
   @@index([userId])
   @@map("post_comment")
+}
+
+model PrivateMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  from        User     @relation(name: "Sender", fields: [fromUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fromUserId  String   @map("from_user_id")
+
+  to          User     @relation(name: "Receiver", fields: [toUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  toUserId    String   @map("to_user_id")
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([createdAt(sort: Desc)])
+  @@map("private_message")
 }

@@ -25,7 +25,8 @@
     "prisma:migrate": "dotenv -e .env.dev -- prisma migrate dev",
     "prisma:generate": "DATABASE_URL=postgres://null:null@null:5432/null prisma generate",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:studio": "dotenv -e .env.dev -- prisma studio"
+    "prisma:studio": "dotenv -e .env.dev -- prisma studio",
+    "prisma:format": "prisma format"
   },
   "exports": {
     "./schemas": "./src/index.schema.ts"
@@ -44,7 +45,9 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-fastify": "^11.1.16",
+    "@nestjs/platform-socket.io": "^11.1.19",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/websockets": "^11.1.19",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "argon2": "^0.44.0",
@@ -61,6 +64,7 @@
     "prisma": "^7.4.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "socket.io": "^4.8.3",
     "swagger-themes": "^1.4.3",
     "zod": "^4.3.6"
   },
