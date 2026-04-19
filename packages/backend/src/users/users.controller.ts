@@ -39,6 +39,7 @@ import {
 } from './entities/user-data-list.js';
 import { UserPartialDataDto } from './entities/user-partial-data.js';
 import { type UUID } from 'node:crypto';
+import { NotificationsListGetDto } from '../notifications/entities/notifications.js';
 
 @Controller('users')
 @ApiTags('Users')
@@ -176,6 +177,11 @@ export class UsersController {
 
   @Get('me/notifications')
   @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    type: NotificationsListGetDto,
+    isArray: true,
+    description: 'The list of notifications that can be found.',
+  })
   @ApiOkResponse({ description: 'List of notifications for the current user.' })
   async listMyNotifications(@Req() req: FastifyRequest) {
     const token = req['user'] as UserTokenDataDto;
