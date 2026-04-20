@@ -262,9 +262,7 @@ export class S3Service {
     }
   }
 
-  async delete(parent: string, filename: string) {
-    const { bucket, key } = S3Service.extractBucketAndKey(parent, filename);
-
+  async delete(bucket: string, key: string) {
     try {
       await this.client.send(
         new DeleteObjectCommand({ Bucket: bucket, Key: key }),

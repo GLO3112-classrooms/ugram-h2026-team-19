@@ -23,6 +23,8 @@ import {
 } from './entities/user-data-list.js';
 import { UserPartialDataDto } from './entities/user-partial-data.js';
 import { StaticService } from '../static/static.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { type UUID } from 'node:crypto';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +32,7 @@ export class UsersService {
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
     private readonly staticService: StaticService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async retrieveAll(query: UserDataListQueryDto): Promise<UserDataListDto> {
@@ -177,9 +180,8 @@ export class UsersService {
 
     if (user.profilePicture) {
       const url = new URL(user.profilePicture);
-      const filename = url.pathname.substring('/static/avatars/'.length);
-      const key = path.join('avatars', token.id, filename);
-      await this.s3Service.delete(this.staticService.getBucket(), key);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     const posts = await this.prismaService.post.findMany({
@@ -195,8 +197,8 @@ export class UsersService {
 
     for (const post of posts) {
       const url = new URL(post.image);
-      const key = url.pathname.substring('/static/images/'.length);
-      await this.s3Service.delete('images', key);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     await this.prismaService.post.deleteMany({
@@ -252,5 +254,17 @@ export class UsersService {
     });
 
     return { avatarUrl: staticAvatarUrl };
+  }
+
+  async listMyNotifications(token: UserTokenDataDto) {
+    return this.notificationsService.list(token);
+  }
+
+  async markNotificationAsRead(token: UserTokenDataDto, id: UUID) {
+    return this.notificationsService.markAsRead(token, id);
+  }
+
+  async markAllNotificationsAsRead(token: UserTokenDataDto) {
+    return this.notificationsService.markAllAsRead(token);
   }
 }
