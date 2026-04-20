@@ -11,7 +11,7 @@ const notificationActorSchema = z.object({
 });
 
 const notificationPostSchema = z.object({
-  id: z.string().uuid().meta({ description: 'The ID of the related post.' }),
+  id: z.uuid().meta({ description: 'The ID of the related post.' }),
   description: z
     .string()
     .meta({ description: 'The description of the related post.' }),
