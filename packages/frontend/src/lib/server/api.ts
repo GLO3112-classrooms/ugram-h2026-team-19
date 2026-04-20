@@ -3,12 +3,11 @@ import { env } from "$env/dynamic/private";
 export async function apiFetch(url: string | URL, init?: RequestInit) {
   try {
     if (typeof url === "string" && !url.startsWith("http")) url = env.API_URL + url;
-    console.log(`Fetching ${url}`);
     const response = await fetch(url, init);
-    if (!response.ok) console.error(response);
+    if (!response.ok) console.error(`Error fetching ${url}`, response);
     return response;
   } catch (error) {
-    console.error(error);
+    console.error(`Error fetching ${url}`, error);
     return {
       ok: false,
       status: 500,

@@ -36,6 +36,14 @@ Vous pouvez également installer et exécuter le projet en local en suivant [les
   - Accédez à votre profil pour voir et modifier vos informations personnelles
 - Créez un nouveau post (`/create`)
   - Partagez une nouvelle photo en remplissant le formulaire de création de post
+- Réagir au post d'un utilisateur
+  - Cliquez sur le cœur pour aimer un post ou cliquez à nouveau pour retirer votre like
+- Commenter un post
+  - Cliquez sur l'icône de commentaire pour ajouter un commentaire à un post
+- Consulter les réactions et les commentaires d'un post
+  - Cliquez sur le nombre de likes ou de commentaires pour voir les détails
+- Notifications lorsqu'un utilisateur interagit avec votre post
+  - Une notification s'affiche dans la zone de notifications (cloche en haut à droite sur la page d'accueil) lorsque quelqu'un aime ou commente votre post
 - Profil d'un utilisateur (`/user/[userId]` et `/user/me`)
   - Cliquez sur le nom d'un utilisateur pour voir son profil et ses posts
   - Votre profil est également accessible depuis la barre de navigation
@@ -46,6 +54,13 @@ Vous pouvez également installer et exécuter le projet en local en suivant [les
   - Recherchez des posts par mots-clés ou hashtags et visualisez les résultats
 - Modifier les détails d'un post (`/update/[postId]`)
   - Modifiez les détails d'un post que vous avez créé
+- Messages privés
+  - Un usager peut envoyer un message privé à un autre utilisateur en cliquant sur le bouton "Message" sur le profil de cet utilisateur
+  - Les messages privés sont affichés en direct lorsque l'utilisateur est sur la conversation correspondante
+- Mots clés populaires
+  - Sur la page de recherche, les mots clés populaires sont affichés pour aider les utilisateurs à découvrir du contenu tendance
+
+- La documentation du backend (API) peut être consultée à l'adresse suivante : https://2mwpsg4nxd.us-east-1.awsapprunner.com/openapi.
 
 ## 🚀 Installation
 
