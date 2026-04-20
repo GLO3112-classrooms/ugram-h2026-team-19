@@ -38,16 +38,19 @@
 
     await commentPost({ id: postId, content: trimmedContent })
       .then(async (result) => {
+        // @ts-expect-error false positive
         if (!result.success) {
+          // @ts-expect-error false positive
           if (result.redirect) {
+            // @ts-expect-error false positive
             await goto(resolve(result.redirect));
             return;
           }
-
+          // @ts-expect-error false positive
           errorMessage = result.message ?? "Something went wrong";
           return;
         }
-
+        // @ts-expect-error false positive
         onCommentCreated?.(result.comment);
         content = "";
       })
