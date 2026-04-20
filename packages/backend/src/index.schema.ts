@@ -23,3 +23,5 @@ export * from './private-messages/schemas/private-message-create.schema.js';
 export * from './private-messages/schemas/private-message-list.schema.js';
 
 export * from './health/schemas/health-status.schema.js';
+
+export * from './notifications/schemas/notifications-list.schema.js'
