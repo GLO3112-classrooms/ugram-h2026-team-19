@@ -29,7 +29,7 @@ export class PrivateMessagesService {
       where: {
         fromUserId: me,
         toUserId: userId,
-        createdAt: { gte: new Date(since) },
+        createdAt: { gt: new Date(since) },
       },
     });
 
@@ -44,7 +44,7 @@ export class PrivateMessagesService {
       where: {
         fromUserId: userId,
         toUserId: me,
-        createdAt: { gte: new Date(since) },
+        createdAt: { gt: new Date(since) },
       },
     });
 
@@ -69,7 +69,7 @@ export class PrivateMessagesService {
       orderBy: { createdAt: 'desc' },
       where: {
         toUserId: me,
-        createdAt: { gte: new Date(since) },
+        createdAt: { gt: new Date(since) },
       },
     });
 
