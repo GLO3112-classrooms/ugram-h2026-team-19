@@ -1,8 +1,9 @@
-<script lang="ts">
+<script module lang="ts">
   import * as Card from "$lib/shadcn/card/index.js";
   import * as Field from "$lib/shadcn/field/index.js";
 
   import { createPost } from "$lib/remotes/post.remote";
+  import { createPostSchema } from "$lib/schemas/createPost.schema";
   import Logo from "$lib/components/Logo.svelte";
   import CardHeader from "$lib/components/CardHeader.svelte";
   import Image from "./components/Image.svelte";
@@ -19,7 +20,7 @@
       <Card.Root>
         <CardHeader title="Create a post" description="Fill in the form below to create a post" />
         <Card.Content>
-          <form {...createPost} enctype="multipart/form-data">
+          <form {...createPost.preflight(createPostSchema)} enctype="multipart/form-data">
             <Field.Group>
               <Image />
               <Description />

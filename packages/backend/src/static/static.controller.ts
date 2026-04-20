@@ -43,8 +43,7 @@ export class StaticController {
     @Res({ passthrough: true }) res: FastifyReply,
   ) {
     const fileObject = await this.staticService.fetchFile(
-      'avatars',
-      path.join(userId, filename),
+      path.join('avatars', userId, filename),
     );
 
     res.headers({
@@ -80,8 +79,7 @@ export class StaticController {
     @Res({ passthrough: true }) res: FastifyReply,
   ) {
     const fileObject = await this.staticService.fetchFile(
-      'images',
-      path.join(postId, filename),
+      path.join('images', postId, filename),
     );
 
     res.headers({

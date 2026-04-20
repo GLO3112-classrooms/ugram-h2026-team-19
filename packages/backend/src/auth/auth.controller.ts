@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,7 +20,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { type FastifyRequest } from 'fastify';
+import fastify from 'fastify';
 import { AuthService } from './auth.service.js';
 import { AuthRegisterDto } from './dto/register.dto.js';
 import { CreatedUserDto } from './entities/created-user.js';
@@ -70,10 +73,23 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'You must be logged in before trying to logout',
   })
-  async logout(@Req() req: FastifyRequest): Promise<void> {
+  async logout(@Req() req: fastify.FastifyRequest): Promise<void> {
     const token = req['user'] as UserTokenDataDto;
     const rawToken = req['token'] as string;
 
     await this.authService.invalidateToken(token, rawToken);
+  }
+
+  @Get('google')
+  async googleLogin(@Res() reply: fastify.FastifyReply) {
+    return await this.authService.googleLogin(reply);
+  }
+
+  @Get('google/callback')
+  async googleCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+  ) {
+    return this.authService.googleCallback(code, state);
   }
 }

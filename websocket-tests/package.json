@@ -1,0 +1,16 @@
+{
+  "name": "websocket-tests",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/node": "^25.6.0",
+    "socket.io-client": "^4.8.3"
+  }
+}

@@ -28,10 +28,25 @@ services:
     command: server /data --console-address ":9001"
     restart: unless-stopped
 
+  redis:
+    image: redis:alpine3.20
+    restart: unless-stopped
+    container_name: ugram-redis
+    ports:
+      - "6379:6379"
+    env_file:
+      - .env
+    volumes:
+      - ugram-cache:/data:rw
+    networks:
+      - ugram-network
+    command: redis-server --save 60 1 --loglevel warning
+
   backend:
     depends_on:
       - postgres
       - minio
+      - redis
     image: ugram-backend
     build:
       context: .
@@ -55,14 +70,14 @@ services:
     build:
       context: .
       dockerfile: ./packages/frontend/Dockerfile
-      args:
-        - API_URL=http://backend:3000
     container_name: ugram-frontend
     ports:
       - "8080:8080"
     env_file:
       - .env
     environment:
+      - API_URL=http://backend:3000
+      - PUBLIC_API_URL=${STATIC_ORIGIN}
       - ORIGIN=${FRONTEND_ORIGIN}
       - BODY_SIZE_LIMIT=50M
     networks:
@@ -75,3 +90,4 @@ networks:
 volumes:
   ugram-database:
   ugram-s3:
+  ugram-cache:

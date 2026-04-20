@@ -33,7 +33,10 @@ import { type FastifyRequest } from 'fastify';
 import { UserTokenDataDto } from '../auth/entities/user-token-data.js';
 import { PostCreateDto } from './dto/create-post.dto.js';
 import { CreatedPostDto } from './entities/created-post.js';
-import { postImageUploadSchema } from './schemas/post-image-upload.schema.js';
+import {
+  postImageUploadSchema,
+  POST_IMAGE_UPLOAD_MAX_SIZE,
+} from './schemas/post-image-upload.schema.js';
 import { PostImageUploadResponseDto } from './entities/post-image-upload.js';
 import { type UUID } from 'node:crypto';
 import { UserTokenData } from '../index.schema.js';
@@ -42,6 +45,9 @@ import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostDataListDto } from './entities/post-data-list.js';
 import { GetPostsQueryDto } from './entities/get-posts-list.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
+import { PostCommentCreateDto } from './dto/create-post-comment.dto.js';
+import { PostCommentDto } from './entities/post-comment.js';
+import { KeywordDataDto } from './entities/keyword-data.js';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -53,6 +59,35 @@ import { PostUpdateDto } from './dto/update-post.dto.js';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  // ─── Keywords ────────────────────────────────────────────────────────────────
+
+  @Get('keywords')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    type: KeywordDataDto,
+    isArray: true,
+    description: 'The list of keywords, filtered by most used to least used.',
+  })
+  async listKeywords(): Promise<KeywordDataDto[]> {
+    return await this.postsService.listKeywords();
+  }
+
+  // ─── Posts ───────────────────────────────────────────────────────────────────
+
+  @Get()
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    type: PostDataListDto,
+    description: 'The list of posts corresponding to the current page.',
+  })
+  async list(
+    @Req() request: FastifyRequest,
+    @Query() query: GetPostsQueryDto,
+  ): Promise<PostDataList> {
+    const token = request['user'] as UserTokenData;
+    return await this.postsService.list(query, query.userId, token.id);
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiOkResponse({
@@ -61,35 +96,12 @@ export class PostsController {
   @ApiNotFoundResponse({
     description: 'The given post ID resolves no post.',
   })
-  async get(@Param('id') id: UUID): Promise<PostDataDto> {
-    return await this.postsService.get(id);
-  }
-
-  @Get('list/:userId')
-  @UseGuards(AuthGuard)
-  @ApiParam({
-    name: 'userId',
-    description: 'The user ID from which to fetch the posts.',
-  })
-  @ApiOkResponse({
-    type: PostDataListDto,
-    description: 'The user post list matching the current page.',
-  })
-  async listUserPosts(
-    @Param('userId') userId: UUID,
-    @Query() query: GetPostsQueryDto,
-  ): Promise<PostDataList> {
-    return await this.postsService.listUserPosts(userId, query);
-  }
-
-  @Get('list')
-  @UseGuards(AuthGuard)
-  @ApiOkResponse({
-    type: PostDataListDto,
-    description: 'The list of posts corresponding to the current page.',
-  })
-  async list(@Query() query: GetPostsQueryDto): Promise<PostDataList> {
-    return await this.postsService.list(query);
+  async get(
+    @Req() request: FastifyRequest,
+    @Param('id') id: UUID,
+  ): Promise<PostDataDto> {
+    const token = request['user'] as UserTokenData;
+    return await this.postsService.get(id, token.id);
   }
 
   @Post()
@@ -155,7 +167,9 @@ export class PostsController {
   })
   async uploadImage(@Req() request: FastifyRequest, @Param('id') id: UUID) {
     const token = request['user'] as UserTokenData;
-    const file = await request.file();
+    const file = await request.file({
+      limits: { fileSize: POST_IMAGE_UPLOAD_MAX_SIZE },
+    });
 
     if (undefined === file) {
       throw new BadRequestException();
@@ -216,5 +230,73 @@ export class PostsController {
     const token = req['user'] as UserTokenData;
 
     return await this.postsService.delete(token, id);
+  }
+
+  // ─── Reactions ───────────────────────────────────────────────────────────────
+
+  @Post(':id/reactions')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'The ID of the post to react to.' })
+  @ApiNoContentResponse({ description: 'Reaction toggled successfully.' })
+  @ApiNotFoundResponse({ description: 'The given post ID resolves no post.' })
+  async toggleReaction(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+  ): Promise<void> {
+    const token = req['user'] as UserTokenData;
+    return await this.postsService.toggleReaction(token, id);
+  }
+
+  // ─── Comments ────────────────────────────────────────────────────────────────
+
+  @Post(':id/comments')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiParam({ name: 'id', description: 'The ID of the post to comment on.' })
+  @ApiBody({
+    type: PostCommentCreateDto,
+    description: 'The payload to create a comment.',
+  })
+  @ApiCreatedResponse({
+    type: PostCommentDto,
+    description: 'The comment has been created.',
+  })
+  @ApiBadRequestResponse({ description: 'The request provided bad body.' })
+  @ApiNotFoundResponse({ description: 'The given post ID resolves no post.' })
+  async createComment(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+    @Body() dto: PostCommentCreateDto,
+  ): Promise<PostCommentDto> {
+    const token = req['user'] as UserTokenData;
+    return await this.postsService.createComment(token, id, dto);
+  }
+
+  @Delete(':id/comments/:commentId')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'The ID of the post.' })
+  @ApiParam({
+    name: 'commentId',
+    description: 'The ID of the comment to delete.',
+  })
+  @ApiNoContentResponse({
+    description: 'The comment was deleted successfully.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The given post or comment ID resolves nothing.',
+  })
+  @ApiForbiddenResponse({
+    description:
+      'The authenticated user does not have the permission to delete this comment.',
+  })
+  async deleteComment(
+    @Req() req: FastifyRequest,
+    @Param('id') id: UUID,
+    @Param('commentId') commentId: UUID,
+  ): Promise<void> {
+    const token = req['user'] as UserTokenData;
+    return await this.postsService.deleteComment(token, id, commentId);
   }
 }

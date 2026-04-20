@@ -1,10 +1,10 @@
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { form, getRequestEvent } from "$app/server";
-import { API_URL } from "$env/static/private";
+import { apiFetch } from "$lib/server/api";
 import { authLoginSchema, authRegisterSchema } from "backend/schemas";
 
 export const signUp = form(authRegisterSchema, async (data, issue) => {
-  const response = await fetch(API_URL + "/auth/register", {
+  const response = await apiFetch("/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -23,12 +23,12 @@ export const signUp = form(authRegisterSchema, async (data, issue) => {
         issue.email("Username or email is already taken")
       );
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
 export const signIn = form(authLoginSchema, async (data, issue) => {
-  const response = await fetch(API_URL + "/auth/login", {
+  const response = await apiFetch("/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -48,6 +48,24 @@ export const signIn = form(authLoginSchema, async (data, issue) => {
         issue.password("Invalid email or password")
       );
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
+  }
+});
+
+export const signOut = form(async () => {
+  const { cookies } = getRequestEvent();
+
+  const response = await apiFetch("/auth/logout", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cookies.get("token")}` }
+  });
+
+  switch (response.status) {
+    case 204:
+    case 401:
+      getRequestEvent().cookies.delete("token", { path: "/" });
+      return redirect(303, "/signin");
+    default:
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });

@@ -1,14 +1,18 @@
-import * as z from "zod";
-import { query, form, getRequestEvent, command } from "$app/server";
-import { API_URL } from "$env/static/private";
+import { command, form, getRequestEvent, query } from "$app/server";
+import { env } from "$env/dynamic/private";
+import { createPostSchema } from "$lib/schemas/createPost.schema";
+import { apiFetch } from "$lib/server/api";
+import { formatKeywordsToMany, formatKeywordsToSingle } from "$lib/utils/keywords";
+import { error, invalid, redirect } from "@sveltejs/kit";
 import {
-  postCreateSchema,
+  type KeywordData,
+  type PostComment,
   type PostData,
   type PostDataList,
-  postImageUploadSchema
+  getPostsQuerySchema
 } from "backend/schemas";
-import { error, invalid, redirect } from "@sveltejs/kit";
-import { getUsers } from "$lib/remotes/user.remote";
+import * as z from "zod";
+import { getUsers } from "./user.remote";
 
 async function getMentionId(mention: string) {
   const { users } = await getUsers({ search: mention, limit: 1 });
@@ -18,11 +22,6 @@ async function getMentionId(mention: string) {
   return users[0].id;
 }
 
-const createPostSchema = postCreateSchema
-  .extend(postImageUploadSchema.shape)
-  .extend({ keywords: z.string().optional(), mention: z.string().optional() })
-  .omit({ mentions: true });
-
 export const createPost = form(createPostSchema, async (data, issue) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
@@ -30,7 +29,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   const mention = data.mention ? await getMentionId(data.mention) : null;
   if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
-  let response = await fetch(API_URL + "/posts", {
+  let response = await apiFetch("/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,11 +37,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
     },
     body: JSON.stringify({
       description: data.description,
-      keywords: (data.keywords ?? "")
-        .replace(/[^\w-_]+/g, " ")
-        .trim()
-        .split(" ")
-        .filter((keyword) => keyword.length),
+      keywords: formatKeywordsToMany(data.keywords ?? ""),
       mentions: mention ? [mention] : []
     })
   });
@@ -54,7 +49,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
       case 401:
         return redirect(303, "/signin");
       default:
-        return error(500, "Something went wrong");
+        return error(500, (await response.text()) || "Something went wrong");
     }
   }
 
@@ -62,7 +57,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
   const formData = new FormData();
   formData.append("image", data.image);
 
-  response = await fetch(API_URL + `/posts/${id}/image`, {
+  response = await apiFetch(`/posts/${id}/image`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formData
@@ -79,7 +74,7 @@ export const createPost = form(createPostSchema, async (data, issue) => {
     case 403:
     case 404:
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -87,7 +82,7 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(API_URL + `/posts/${id}`, {
+  const response = await apiFetch(`/posts/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -99,23 +94,24 @@ export const getPost = query(z.uuid(), async (id): Promise<PostData> => {
     case 404:
       return error(404, "Post not found");
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
 export const getPosts = query(
-  z.object({
-    userId: z.uuid().optional(),
-    skip: z.number().optional().default(0)
-  }),
-  async ({ userId, skip }): Promise<PostDataList> => {
+  getPostsQuerySchema.extend({ userId: z.uuid().optional() }),
+  async ({ userId, skip, limit, description, keywords }): Promise<PostDataList> => {
     const { cookies } = getRequestEvent();
     const token = cookies.get("token");
 
-    const response = await fetch(
-      API_URL + (userId ? `/posts/list/${userId}?skip=${skip}` : `/posts/list?skip=${skip}`),
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const url = new URL("/posts", env.API_URL);
+    if (userId) url.searchParams.append("userId", userId.toString());
+    url.searchParams.append("skip", skip.toString());
+    url.searchParams.append("limit", limit.toString());
+    if (description) url.searchParams.append("description", description);
+    if (keywords) url.searchParams.append("keywords", formatKeywordsToSingle(keywords));
+
+    const response = await apiFetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
     switch (response.status) {
       case 200:
@@ -123,7 +119,7 @@ export const getPosts = query(
       case 401:
         return redirect(303, "/signin");
       default:
-        return error(500, "Something went wrong");
+        return error(500, (await response.text()) || "Something went wrong");
     }
   }
 );
@@ -142,7 +138,7 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
   const mention = data.mention ? await getMentionId(data.mention) : null;
   if (data.mention && !mention) return invalid(issue.mention("User not found"));
 
-  const response = await fetch(API_URL + `/posts/${data.id}`, {
+  const response = await apiFetch(`/posts/${data.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -150,11 +146,7 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
     },
     body: JSON.stringify({
       description: data.description,
-      keywords: (data.keywords ?? "")
-        .replace(/[^\w-_]+/g, " ")
-        .trim()
-        .split(" ")
-        .filter((keyword) => keyword.length),
+      keywords: formatKeywordsToMany(data.keywords ?? ""),
       mentions: mention ? [mention] : []
     })
   });
@@ -166,11 +158,12 @@ export const updatePost = form(updatePostSchema, async (data, issue) => {
       return invalid(...(await response.json()).errors);
     case 401:
       return redirect(303, "/signin");
-    // 403 and 404 are not intended to happen here, so we treat them as unexpected errors
     case 403:
+      return invalid(issue.id("You don't have permission to edit this post"));
     case 404:
+      return invalid(issue.id("Post not found"));
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });
 
@@ -178,20 +171,99 @@ export const deletePost = command(z.uuid(), async (id) => {
   const { cookies } = getRequestEvent();
   const token = cookies.get("token");
 
-  const response = await fetch(API_URL + `/posts/${id}`, {
+  const response = await apiFetch(`/posts/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` }
   });
 
   switch (response.status) {
     case 204:
-      return { success: true };
+      return { success: true, redirect: "/" } as const;
     case 401:
-      return { success: false };
-    // 403 and 404 are not intended to happen here, so we treat them as unexpected errors
+      return { success: false, redirect: "/signin" } as const;
     case 403:
+      return { success: false, message: "You don't have permission to delete this post" } as const;
     case 404:
+      return { success: false, message: "Post not found" } as const;
     default:
-      return error(500, "Something went wrong");
+      return error(500, (await response.text()) || "Something went wrong");
+  }
+});
+
+export const likePost = command(z.uuid(), async (id) => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const response = await apiFetch(`/posts/${id}/reactions`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 204:
+      return { success: true } as const;
+    case 401:
+      return { success: false, redirect: "/signin" } as const;
+    case 404:
+      return { success: false, message: "Post not found" } as const;
+    default:
+      return error(500, (await response.text()) || "Something went wrong");
+  }
+});
+
+export const commentPost = command(
+  z.object({ id: z.uuid(), content: z.string().trim().min(1) }),
+  async ({ id, content }) => {
+    const token = getRequestEvent().cookies.get("token");
+
+    const response = await apiFetch(`/posts/${id}/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    });
+
+    switch (response.status) {
+      case 201:
+        return { success: true, comment: (await response.json()) as PostComment } as const;
+      case 400: {
+        const body = (await response.json()) as {
+          errors?: unknown;
+          message?: string;
+        };
+        return {
+          success: false,
+          message:
+            body.message ||
+            "Unable to add comment. Please fix the highlighted errors and try again.",
+          errors: body.errors
+        } as const;
+      }
+      case 401:
+        return { success: false, redirect: "/signin" } as const;
+      case 404:
+        return { success: false, message: "Post not found" } as const;
+      default:
+        return error(500, (await response.text()) || "Something went wrong");
+    }
+  }
+);
+
+export const getKeywords = query<KeywordData[]>(async () => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const response = await apiFetch("/posts/keywords", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 200:
+      return await response.json();
+    case 401:
+      return redirect(303, "/signin");
+
+    default:
+      return error(500, (await response.text()) || "Something went wrong");
   }
 });

@@ -12,12 +12,9 @@ import {
   AbortMultipartUploadCommand,
   PutObjectCommand,
   DeleteObjectCommand,
-  BucketAlreadyOwnedByYou,
-  NotFound,
-  NoSuchBucket,
-  NoSuchKey,
 } from '@aws-sdk/client-s3';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 
 @Injectable()
 export class S3Service {
@@ -25,31 +22,63 @@ export class S3Service {
 
   constructor(
     endpoint: string,
-    accessKeyId: string,
-    secretAccessKey: string,
-    region: string = 'us-east-1',
+    region: string,
+    accessKeyId?: string,
+    secretAccessKey?: string,
   ) {
     this.client = new S3Client({
       endpoint: endpoint,
       region: region,
-      forcePathStyle: true, // Minio requires this
-      credentials: {
-        accessKeyId: accessKeyId,
-        secretAccessKey: secretAccessKey,
-      },
+      forcePathStyle: !endpoint.includes(`${region}.amazonaws.com`), // keep minio compatibility
+      credentials:
+        accessKeyId && secretAccessKey
+          ? {
+              accessKeyId,
+              secretAccessKey,
+            }
+          : fromNodeProviderChain(),
     });
+  }
+
+  static sanitizeFilename(filename: string) {
+    // replace all non-ASCII characters with _
+    return filename.replace(/[^\x20-\x7E]/g, '_');
+  }
+
+  private static extractBucketAndKey(input: string, filename?: string) {
+    // supports "s3://bucket/key..." or "bucket/key..." + optional filename
+    let bucket = '';
+    let keyFragments: string[] = [];
+
+    if (input.startsWith('s3://')) {
+      const parts = input.slice(5).split('/');
+      bucket = parts.shift()!;
+      keyFragments = parts;
+    } else {
+      const parts = input.split('/');
+      bucket = parts.shift()!;
+      keyFragments = parts;
+    }
+
+    if (filename) {
+      keyFragments.push(S3Service.sanitizeFilename(filename));
+    }
+
+    const key = path.join(...keyFragments);
+    return { bucket, key };
   }
 
   private async ensureBucketExists(bucket: string) {
     try {
       await this.client.send(new HeadBucketCommand({ Bucket: bucket }));
     } catch (e) {
-      if (e instanceof BucketAlreadyOwnedByYou) {
-        return;
+      if (!(e instanceof Error)) {
+        throw e;
       }
-
-      if (e instanceof NotFound || e instanceof NoSuchBucket) {
+      if (e.name === 'BucketAlreadyOwnedByYou') return;
+      if (e.name === 'NotFound' || e.name === 'NoSuchBucket') {
         await this.createBucket(bucket);
+        return;
       }
       throw e;
     }
@@ -83,10 +112,7 @@ export class S3Service {
     ++partState.partNumber;
   }
 
-  async createBucket(
-    bucket: string,
-    ignoreIfExists: boolean = true,
-  ): Promise<void> {
+  async createBucket(bucket: string, ignoreIfExists = true) {
     if (!ignoreIfExists) {
       await this.client.send(new CreateBucketCommand({ Bucket: bucket }));
       return;
@@ -94,10 +120,10 @@ export class S3Service {
     try {
       await this.client.send(new CreateBucketCommand({ Bucket: bucket }));
     } catch (e) {
-      if (e instanceof BucketAlreadyOwnedByYou) {
-        return;
+      if (!(e instanceof Error)) {
+        throw e;
       }
-
+      if (e.name === 'BucketAlreadyOwnedByYou') return;
       throw e;
     }
   }
@@ -109,9 +135,7 @@ export class S3Service {
     contentType: string,
     metadata?: Record<string, string>,
   ): Promise<string> {
-    const [bucket, ...keyFragments] = parent.split(/\//g);
-
-    const key = path.join(...keyFragments, filename);
+    const { bucket, key } = S3Service.extractBucketAndKey(parent, filename);
 
     await this.ensureBucketExists(bucket);
 
@@ -174,10 +198,8 @@ export class S3Service {
     stream: Readable,
     contentType: string,
     metadata?: Record<string, string>,
-  ): Promise<string> {
-    const [bucket, ...keyFragments] = parent.split(/\//g);
-
-    const key = path.join(...keyFragments, filename);
+  ) {
+    const { bucket, key } = S3Service.extractBucketAndKey(parent, filename);
 
     await this.ensureBucketExists(bucket);
 
@@ -194,47 +216,15 @@ export class S3Service {
     return `s3://${bucket}/${key}`;
   }
 
-  async head(parent: string, filename: string) {
-    const [bucket, ...keyFragments] = parent.split(/\//g);
-
-    const key = path.join(...keyFragments, filename);
+  async pull(parent: string, filename: string) {
+    const { bucket, key } = S3Service.extractBucketAndKey(parent, filename);
 
     try {
       const result = await this.client.send(
-        new HeadObjectCommand({
-          Bucket: bucket,
-          Key: key,
-        }),
-      );
-      return result.Metadata;
-    } catch {
-      return undefined;
-    }
-  }
-
-  async pull(
-    parent: string,
-    filename: string,
-  ): Promise<{
-    stream: Readable;
-    parent: string;
-    filename: string;
-    contentType: string;
-    metadata?: Record<string, string>;
-  }> {
-    const [bucket, ...keyFragments] = parent.split(/\//g);
-
-    const key = path.join(...keyFragments, filename);
-
-    try {
-      const result = await this.client.send(
-        new GetObjectCommand({
-          Bucket: bucket,
-          Key: key,
-        }),
+        new GetObjectCommand({ Bucket: bucket, Key: key }),
       );
 
-      if (undefined === result.Body)
+      if (!result.Body)
         throw new NotFoundException(
           `Unable to find the document. (loc: ${bucket}/${key})`,
         );
@@ -247,7 +237,10 @@ export class S3Service {
         metadata: result.Metadata,
       };
     } catch (e) {
-      if (e instanceof NoSuchKey || e instanceof NotFound) {
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      if (e.name === 'NoSuchKey' || e.name === 'NotFound') {
         throw new NotFoundException(
           `Unable to find the document. (loc: ${bucket}/${key})`,
         );
@@ -256,17 +249,12 @@ export class S3Service {
     }
   }
 
-  async exists(parent: string, filename: string): Promise<boolean> {
-    const [bucket, ...keyFragments] = parent.split(/\//g);
-
-    const key = path.join(...keyFragments, filename);
+  async exists(parent: string, filename: string) {
+    const { bucket, key } = S3Service.extractBucketAndKey(parent, filename);
 
     try {
       await this.client.send(
-        new HeadObjectCommand({
-          Bucket: bucket,
-          Key: key,
-        }),
+        new HeadObjectCommand({ Bucket: bucket, Key: key }),
       );
       return true;
     } catch {
@@ -274,20 +262,16 @@ export class S3Service {
     }
   }
 
-  async delete(parent: string, filename: string): Promise<void> {
-    const [bucket, ...keyFragments] = parent.split(/\//g);
-
-    const key = path.join(...keyFragments, filename);
-
+  async delete(bucket: string, key: string) {
     try {
       await this.client.send(
-        new DeleteObjectCommand({
-          Bucket: bucket,
-          Key: key,
-        }),
+        new DeleteObjectCommand({ Bucket: bucket, Key: key }),
       );
     } catch (e) {
-      if (e instanceof NoSuchKey || e instanceof NotFound) {
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      if (e.name === 'NoSuchKey' || e.name === 'NotFound') {
         throw new NotFoundException(
           `Unable to find the document. (loc: ${bucket}/${key})`,
         );

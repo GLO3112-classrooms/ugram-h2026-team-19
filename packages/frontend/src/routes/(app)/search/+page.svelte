@@ -1,120 +1,126 @@
-<script lang="ts">
-  import { SearchIcon } from "@lucide/svelte";
-  import type { UserData } from "backend/schemas";
-  import { onMount } from "svelte";
-  import { resolve } from "$app/paths";
+<script module lang="ts">
+  import Code from "$lib/components/Code.svelte";
+  import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
+  import Post from "$lib/components/Post.svelte";
+  import UserLink from "$lib/components/UserLink.svelte";
+  import { getKeywords, getPosts } from "$lib/remotes/post.remote";
+  import { getMe, getUsers } from "$lib/remotes/user.remote";
+  import Button from "$lib/shadcn/button/button.svelte";
   import * as InputGroup from "$lib/shadcn/input-group";
-  import { getUsers } from "$lib/remotes/user.remote";
-  import User from "$lib/components/User.svelte";
+  import { ScrollArea } from "$lib/shadcn/scroll-area/index.js";
+  import Separator from "$lib/shadcn/separator/separator.svelte";
+  import * as Tabs from "$lib/shadcn/tabs/index.js";
+  import { HashIcon, SearchIcon, TextAlignStartIcon, UserIcon } from "@lucide/svelte";
 
-  let users = $state<UserData[]>([]);
-  let loading = $state(false);
-  let hasMore = $state(true);
-  let error = $state(false);
-  let total = 0;
-
-  let search = $state("");
-  let searchTimer: ReturnType<typeof setTimeout> | null = null;
-
-  async function loadMoreUsers() {
-    if (error || loading || !hasMore) return;
-
-    loading = true;
-    try {
-      const result = await getUsers({ search, skip: users.length });
-      users = [...users, ...result.users];
-      total = result.total;
-      hasMore = users.length < total;
-
-      if (hasMore && !isPageScrollable()) {
-        loading = false;
-        await loadMoreUsers();
-      }
-    } catch {
-      error = true;
-    } finally {
-      loading = false;
+  const tabs = [
+    {
+      label: "user",
+      icon: UserIcon,
+      component: UserLink
+    },
+    {
+      label: "description",
+      icon: TextAlignStartIcon,
+      component: undefined
+    },
+    {
+      label: "keyword",
+      icon: HashIcon,
+      component: undefined
     }
-  }
-
-  function isPageScrollable() {
-    return document.documentElement.scrollHeight > window.innerHeight;
-  }
-
-  function handleSearch() {
-    if (searchTimer) clearTimeout(searchTimer);
-
-    searchTimer = setTimeout(() => {
-      users = [];
-      hasMore = true;
-      error = false;
-      loadMoreUsers();
-    }, 300);
-  }
-
-  function handleScroll() {
-    if (error || loading || !hasMore) return;
-
-    const scrollTop = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-
-    if (scrollTop + windowHeight >= documentHeight * 0.8) {
-      loadMoreUsers();
-    }
-  }
-
-  onMount(() => {
-    loadMoreUsers();
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  });
+  ] as const;
 </script>
 
-<div class="mx-auto max-w-5xl">
-  <div class="sticky top-0 z-10 bg-background px-7 pt-7">
-    <InputGroup.Root>
-      <InputGroup.Input
-        type="text"
-        placeholder="Search users by username"
-        bind:value={search}
-        oninput={handleSearch}
-      />
-      <InputGroup.Addon>
-        <SearchIcon />
-      </InputGroup.Addon>
-    </InputGroup.Root>
-  </div>
+<script lang="ts">
+  const me = await getMe();
 
-  <div class="space-y-5 p-3 md:p-7">
-    {#each users as user (user.id)}
-      <div>
-        <a href={resolve(`/user/${user.id}`)}>
-          <User {...user} />
-        </a>
-      </div>
-    {/each}
+  let value: string = $state("");
+  let tab: (typeof tabs)[number]["label"] = $state(tabs[0].label);
+</script>
 
-    {#if error}
-      <p class="py-8 text-center text-red-500">
-        Oops! Something went wrong while loading users. Please try again later.
-      </p>
-    {:else if loading}
-      <div class="flex justify-center py-8">
-        <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
-      </div>
-    {:else if !hasMore && users.length}
-      <p class="py-8 text-center text-gray-500">
-        You've reached the end of the users matching your search!
-      </p>
-    {:else if !users.length}
-      <p class="py-8 text-center text-gray-500">
-        No users found matching your search. Try adjusting your search criteria or check back later
-        for new users!
-      </p>
+<div class=" flex flex-col gap-2">
+  <InputGroup.Root>
+    <InputGroup.Input placeholder="Search..." bind:value />
+    <InputGroup.Addon>
+      <SearchIcon />
+    </InputGroup.Addon>
+  </InputGroup.Root>
+
+  <Tabs.Root bind:value={tab}>
+    <Tabs.List class="h-10 w-full">
+      {#each tabs as { label, icon } (label)}
+        {@const Icon = icon}
+        <Tabs.Trigger class="capitalize" value={label}>
+          <Icon />
+          {label}
+        </Tabs.Trigger>
+      {/each}
+    </Tabs.List>
+
+    {#if tab === "user"}
+      <Tabs.Content value="user">
+        {#key value}
+          <InfiniteScroll callback={(skip, limit) => getUsers({ search: value, skip, limit })}>
+            {#snippet children({ users })}
+              {#each users as user (user.username)}
+                <UserLink {...user} />
+              {/each}
+            {/snippet}
+          </InfiniteScroll>
+        {/key}
+      </Tabs.Content>
     {/if}
-  </div>
+
+    {#if tab === "description"}
+      <Tabs.Content value="description">
+        {#key value}
+          <InfiniteScroll callback={(skip, limit) => getPosts({ description: value, skip, limit })}>
+            {#snippet children({ posts })}
+              {#each posts as post (post.id)}
+                <Post {post} own={false} currentUser={me} />
+              {/each}
+            {/snippet}
+          </InfiniteScroll>
+        {/key}
+      </Tabs.Content>
+    {/if}
+
+    {#if tab === "keyword"}
+      <Tabs.Content value="keyword">
+        <div class="flex flex-col gap-2">
+          <p class="mb-1 text-xs text-muted-foreground">
+            All non-alphanumeric characters will be ignored, except for the dash (<Code>-</Code>)
+            and the underscore (<Code>_</Code>). Spaces are ignored too, so <Code>key word</Code> will
+            search for <Code>keyword</Code> for example.
+          </p>
+
+          <ScrollArea orientation="horizontal">
+            <div class="flex items-center gap-2">
+              <p class="text-xs">Trending<br />keywords</p>
+              {#each await getKeywords() as { value: keyword } (keyword)}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onclick={() => (value = keyword)}
+                  class="cursor-pointer rounded-2xl">{keyword}</Button
+                >
+              {/each}
+            </div>
+          </ScrollArea>
+
+          <Separator />
+        </div>
+
+        {#key value}
+          <InfiniteScroll callback={(skip, limit) => getPosts({ keywords: value, skip, limit })}>
+            {#snippet children({ posts })}
+              {#each posts as post (post.id)}
+                <Post {post} own={false} currentUser={me} />
+              {/each}
+            {/snippet}
+          </InfiniteScroll>
+        {/key}
+      </Tabs.Content>
+    {/if}
+  </Tabs.Root>
 </div>

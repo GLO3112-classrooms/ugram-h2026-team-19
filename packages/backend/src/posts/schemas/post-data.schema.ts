@@ -1,21 +1,31 @@
 import z from 'zod';
 
-export const postDataAuthorSchema = z.object({
-  id: z.uuid().meta({ description: 'The ID of the author' }),
+export const postUserSchema = z.object({
+  id: z.uuid().meta({ description: 'The ID of the user' }),
   username: z.string().meta({
-    description: 'The author username',
+    description: 'The username',
   }),
   profilePicture: z.string().meta({
-    description: 'The author profile picture URL (empty string if none)',
+    description: 'The user profile picture URL (empty string if none)',
   }),
 });
 
-export const postDataMentionSchema = z.object({
-  id: z.uuid().meta({
-    description: 'The ID of the user',
+export const postKeywordSchema = z.object({
+  value: z.string().meta({
+    description: 'The keyword for this post data.',
   }),
-  username: z.string().meta({
-    description: 'The username of the user',
+});
+
+export const postCommentSchema = z.object({
+  id: z.uuid().meta({ description: 'The ID of the comment' }),
+  content: z.string().min(1).meta({
+    description: 'The content of the post to comment on.',
+  }),
+  createdAt: z.iso.datetime().meta({
+    description: 'The post creation datetime (ISO format)',
+  }),
+  user: postUserSchema.meta({
+    description: 'The comment author',
   }),
 });
 
@@ -24,16 +34,25 @@ export const postDataSchema = z.object({
   description: z.string().meta({
     description: 'The post description',
   }),
-  keywords: z.array(z.string()).meta({
+  keywords: z.array(postKeywordSchema).meta({
     description: 'The post keywords (hashtags)',
   }),
-  mentions: z.array(postDataMentionSchema).meta({
-    description: 'The post user mentions (list of user ID)',
+  mentions: z.array(postUserSchema).meta({
+    description: 'The post user mentions',
+  }),
+  reactions: z.array(postUserSchema).meta({
+    description: 'The users who reacted to the post',
+  }),
+  likedByMe: z.boolean().meta({
+    description: 'Whether the authenticated user reacted to this post',
+  }),
+  comments: z.array(postCommentSchema).meta({
+    description: 'The post comments',
   }),
   image: z.string().meta({
     description: 'The post image URL (empty string if none)',
   }),
-  user: postDataAuthorSchema.meta({
+  user: postUserSchema.meta({
     description: 'The post author',
   }),
   createdAt: z.iso.datetime().meta({
@@ -41,4 +60,6 @@ export const postDataSchema = z.object({
   }),
 });
 
+export type PostUser = z.infer<typeof postUserSchema>;
+export type PostComment = z.infer<typeof postCommentSchema>;
 export type PostData = z.infer<typeof postDataSchema>;

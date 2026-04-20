@@ -1,96 +1,21 @@
 <script lang="ts">
-  import type { PostData } from "backend/schemas";
-  import { onMount } from "svelte";
-  import { resolve } from "$app/paths";
-  import { getMe } from "$lib/remotes/user.remote";
-  import { getPosts } from "$lib/remotes/post.remote";
+  import InfiniteScroll from "$lib/components/InfiniteScroll.svelte";
   import Post from "$lib/components/Post.svelte";
+  import { getPosts } from "$lib/remotes/post.remote";
+  import { getMe } from "$lib/remotes/user.remote";
+  import AppBar from "./components/AppBar.svelte";
 
   const me = await getMe();
-
-  let posts = $state<PostData[]>([]);
-  let loading = $state(false);
-  let hasMore = $state(true);
-  let error = $state(false);
-  let total = 0;
-
-  async function loadMorePosts() {
-    if (error || loading || !hasMore) return;
-
-    loading = true;
-    try {
-      const result = await getPosts({ skip: posts.length });
-      posts = [...posts, ...result.posts];
-      total = result.total;
-      hasMore = posts.length < total;
-
-      if (hasMore && !isPageScrollable()) {
-        loading = false;
-        await loadMorePosts();
-      }
-    } catch {
-      error = true;
-    } finally {
-      loading = false;
-    }
-  }
-
-  function isPageScrollable() {
-    return document.documentElement.scrollHeight > window.innerHeight;
-  }
-
-  function handleScroll() {
-    if (error || loading || !hasMore) return;
-
-    const scrollTop = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-
-    if (scrollTop + windowHeight >= documentHeight * 0.8) {
-      loadMorePosts();
-    }
-  }
-
-  onMount(() => {
-    loadMorePosts();
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  });
 </script>
 
-<div class="mx-auto max-w-5xl space-y-5 p-3 md:p-7">
-  {#each posts as post (post.id)}
-    <Post
-      id={post.id}
-      user={post.user}
-      image={post.image}
-      description={post.description}
-      keywords={post.keywords}
-      mentions={post.mentions}
-      date={post.createdAt}
-      own={me?.id === post.user.id}
-    />
-  {/each}
+<div>
+  <AppBar />
 
-  {#if error}
-    <p class="py-8 text-center text-red-500">
-      Oops! Something went wrong while loading posts. Please try again later.
-    </p>
-  {:else if loading}
-    <div class="flex justify-center py-8">
-      <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
-    </div>
-  {:else if !hasMore && posts.length}
-    <p class="py-8 text-center text-gray-500">You've reached the end of the posts! 😱</p>
-  {:else if !posts.length}
-    <p class="py-8 text-center text-gray-500">
-      No post yet! 😔 Be the first to share something, <a
-        class="text-cyan-600 underline"
-        href={resolve("/create")}>create a post</a
-      >!
-    </p>
-  {/if}
+  <InfiniteScroll callback={(skip, limit) => getPosts({ skip, limit })}>
+    {#snippet children({ posts })}
+      {#each posts as post (post.id)}
+        <Post {post} own={me?.id === post.user.id} currentUser={me} />
+      {/each}
+    {/snippet}
+  </InfiniteScroll>
 </div>

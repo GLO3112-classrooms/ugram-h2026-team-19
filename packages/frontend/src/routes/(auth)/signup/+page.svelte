@@ -69,6 +69,7 @@
               <FieldInput
                 required
                 label="password"
+                minlength={8}
                 {...signUp.fields.password.as("password")}
                 issues={signUp.fields.password.issues()}
               />
@@ -76,6 +77,8 @@
               <FieldInput
                 required
                 label="confirm password"
+                type="password"
+                oninput={(event) => (value = event.currentTarget.value)}
                 aria-invalid={signUp.fields.password.value() !== value}
               />
             </Field.Field>

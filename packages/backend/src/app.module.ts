@@ -8,6 +8,9 @@ import { S3Module } from './s3/s3.module.js';
 import { StaticModule } from './static/static.module.js';
 import { PostsModule } from './posts/posts.module.js';
 import { RedisOptions } from './app.config.js';
+import { HealthModule } from './health/health.module.js';
+import { PrivateMessagesModule } from './private-messages/private-messages.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -19,6 +22,9 @@ import { RedisOptions } from './app.config.js';
     S3Module,
     StaticModule,
     PostsModule,
+    HealthModule,
+    PrivateMessagesModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

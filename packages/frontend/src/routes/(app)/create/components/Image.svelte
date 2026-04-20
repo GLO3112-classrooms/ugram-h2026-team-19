@@ -8,7 +8,7 @@
   let image = $derived(file ? URL.createObjectURL(file) : "");
 </script>
 
-<div class="grid w-full max-w-sm items-center gap-1.5">
+<div class="grid w-full items-center gap-1.5">
   <Label for="image">Image</Label>
   <Input {...createPost.fields.image.as("file")} id="image" accept="image/*" required />
   {#each createPost.fields.image.issues() as issue, index (index)}

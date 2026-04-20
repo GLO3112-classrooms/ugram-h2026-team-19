@@ -8,7 +8,7 @@ export const authRegisterSchema = z.object({
   username: z.string().meta({
     description: 'The user username',
   }),
-  password: z.string().meta({
+  password: z.string().min(8).meta({
     description: 'The user password',
   }),
   firstname: z.string().meta({
@@ -19,7 +19,10 @@ export const authRegisterSchema = z.object({
   }),
   phoneNumber: z
     .string()
-    .regex(PHONE_NUMBER_REGEX, { error: 'Invalid phone number' })
+    .regex(PHONE_NUMBER_REGEX, {
+      error:
+        'Invalid phone number: must contain only digits and be between 9 and 12 characters',
+    })
     .meta({
       description: 'The user phone number',
     }),

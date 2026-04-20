@@ -27,7 +27,12 @@
 </script>
 
 <Field.Field class="text-center">
-  <Button type="button" variant={confirm ? "destructive" : "outline"} onclick={handleConfirm}>
+  <Button
+    class="cursor-pointer"
+    type="button"
+    variant={confirm ? "destructive" : "outline"}
+    onclick={handleConfirm}
+  >
     {#if children}
       {@render children()}
     {:else}

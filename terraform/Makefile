@@ -1,29 +1,39 @@
-.PHONY: init plan apply destroy validate fmt check clean
+.PHONY: init plan apply destroy validate fmt check clean force-plan
 
 PLAN_FILE=terraform.plan
 
-init:
-	terraform init
-
-$(PLAN_FILE): plan
-
-plan:
-	terraform plan -out=$(PLAN_FILE)
-
 apply: $(PLAN_FILE)
-	terraform apply $(PLAN_FILE)
+	time terraform apply $(PLAN_FILE)
 
-destroy:
-	terraform destroy
+$(PLAN_FILE): force-plan
 
-validate:
-	terraform validate
+force-plan: check
+	@true
+
+check: fmt validate
 
 fmt:
 	terraform fmt -recursive
 
-check: fmt validate plan
+validate:
+	terraform validate
 
-clean:
+plan: init
+	terraform plan -out=$(PLAN_FILE)
+
+apply-fresh:
+	make clean-plan
+	make apply
+
+clean-plan:
+	rm -f $(PLAN_FILE)
+
+init:
+	terraform init
+
+destroy:
+	time terraform destroy
+
+clean: clean-plan
 	rm -rf .terraform
-	rm -f terraform.tfstate* $(PLAN_FILE)
+	rm -f terraform.tfstate*

@@ -12,27 +12,110 @@ model User {
   id             String   @id @default(uuid())
   email          String   @unique
   username       String   @unique
-  hashedPassword String   @map("hashed_password")
+  hashedPassword String   @map("hashed_password") @default("")
   firstname      String
   lastname       String
-  phoneNumber    String   @map("phone_number")
+  phoneNumber    String   @map("phone_number") @default("")
   profilePicture String   @map("profile_picture") @default("")
   createdAt      DateTime @default(now()) @map("created_at")
-  posts Post[]
 
+  posts            Post[]
+  mentionedInPosts Post[]        @relation("PostMentions")
+  reactedToPosts   Post[]        @relation("PostReactions")
+  comments         PostComment[]
+
+  sentMessages      PrivateMessage[]  @relation("Sender")
+  receivedMessages  PrivateMessage[]  @relation("Receiver")
+
+  sentNotifications     Notification[] @relation("SentNotifications")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
   @@map("user")
 }
 
 model Post {
-  user User @relation(references: id, fields: [userId], onDelete: Cascade, onUpdate: Cascade)
-  userId String
-  id String @id @default(uuid())
+  id          String   @id @default(uuid())
   description String
-  /// Also known as 'hashtags'
-  keywords String[] @default([])
-  mentions String[] @default([])
-  image String @default("")
+  image       String   @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId   String @map("user_id")
+
+  // Post social interactions
+  mentions User[] @relation("PostMentions")
+  reactions User[] @relation("PostReactions")
+  keywords PostKeyword[] @relation("PostKeywords")
+  comments  PostComment[]
+  notifications Notification[]
+
+  @@index([createdAt(sort: Desc)])
+  @@map("post")
+}
+
+model PostKeyword {
+  id      String @id @default(uuid())
+  value   String @unique
+  posts   Post[] @relation("PostKeywords")
+
+  @@index([value])
+  @@map("post_keyword")
+}
+
+model PostComment {
+  id        String   @id @default(uuid())
+  content   String
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("post")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId String @map("post_id")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @map("user_id")
+
+  @@index([postId])
+  @@index([userId])
+  @@map("post_comment")
+}
+
+model PrivateMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  from        User     @relation(name: "Sender", fields: [fromUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fromUserId  String   @map("from_user_id")
+
+  to          User     @relation(name: "Receiver", fields: [toUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  toUserId    String   @map("to_user_id")
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([createdAt(sort: Desc)])
+  @@map("private_message")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  recipient   User   @relation("ReceivedNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String @map("recipient_id")
+
+  actor   User   @relation("SentNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+  actorId String @map("actor_id")
+
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String? @map("post_id")
+
+  @@index([recipientId, read])
+  @@map("notification")
+}
+
+enum NotificationType {
+  POST_LIKED
+  POST_UNLIKED
+  POST_COMMENTED
+  POST_COMMENT_DELETED
 }

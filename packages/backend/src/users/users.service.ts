@@ -23,6 +23,8 @@ import {
 } from './entities/user-data-list.js';
 import { UserPartialDataDto } from './entities/user-partial-data.js';
 import { StaticService } from '../static/static.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { type UUID } from 'node:crypto';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +32,7 @@ export class UsersService {
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
     private readonly staticService: StaticService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async retrieveAll(query: UserDataListQueryDto): Promise<UserDataListDto> {
@@ -43,7 +46,9 @@ export class UsersService {
         profilePicture: true,
       },
       where: {
-        username: query.search ? { contains: query.search } : undefined,
+        username: query.search
+          ? { contains: query.search, mode: 'insensitive' }
+          : undefined,
       },
       skip: query.skip,
       take: query.limit,
@@ -59,7 +64,9 @@ export class UsersService {
       })),
       total: await this.prismaService.user.count({
         where: {
-          username: query.search ? { contains: query.search } : undefined,
+          username: query.search
+            ? { contains: query.search, mode: 'insensitive' }
+            : undefined,
         },
       }),
     };
@@ -173,13 +180,14 @@ export class UsersService {
 
     if (user.profilePicture) {
       const url = new URL(user.profilePicture);
-      const key = url.pathname.substring('/static/avatars/'.length);
-      await this.s3Service.delete('avatars', key);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     const posts = await this.prismaService.post.findMany({
       where: {
         userId: token.id,
+        image: { not: { equals: '' } },
       },
       select: {
         id: true,
@@ -188,11 +196,9 @@ export class UsersService {
     });
 
     for (const post of posts) {
-      if (post.image) {
-        const url = new URL(post.image);
-        const key = url.pathname.substring('/static/images/'.length);
-        await this.s3Service.delete('images', key);
-      }
+      const url = new URL(post.image);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     await this.prismaService.post.deleteMany({
@@ -228,17 +234,16 @@ export class UsersService {
     });
     const uploadStream = file.file.pipe(sizeValidator);
 
-    await this.s3Service.createBucket('avatars');
-
-    const filename = path.join(token.id, file.filename);
+    const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
+    const key = path.join('avatars', token.id, sanitizedFilename);
     await this.s3Service.pushMultipart(
-      'avatars',
-      filename,
+      this.staticService.getBucket(),
+      key,
       uploadStream,
       file.mimetype,
     );
-    const staticAvatarUrl = `${this.staticService.getStaticOrigin()}/static/avatars/${filename}`;
 
+    const staticAvatarUrl = `${this.staticService.getStaticOrigin()}/static/${key}`;
     await this.prismaService.user.update({
       where: {
         id: token.id,
@@ -249,5 +254,17 @@ export class UsersService {
     });
 
     return { avatarUrl: staticAvatarUrl };
+  }
+
+  async listMyNotifications(token: UserTokenDataDto) {
+    return this.notificationsService.list(token);
+  }
+
+  async markNotificationAsRead(token: UserTokenDataDto, id: UUID) {
+    return this.notificationsService.markAsRead(token, id);
+  }
+
+  async markAllNotificationsAsRead(token: UserTokenDataDto) {
+    return this.notificationsService.markAllAsRead(token);
   }
 }

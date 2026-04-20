@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { NotificationType, Prisma } from '../prisma/generated/client.js';
 import { S3Service } from '../s3/s3.service.js';
 import { BadRequestException } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
@@ -23,6 +24,75 @@ import { GetPostsQuery } from './schemas/get-posts-list.schema.js';
 import { PostDataList } from './schemas/post-data-list.schema.js';
 import { PostUpdateDto } from './dto/update-post.dto.js';
 import { StaticService } from '../static/static.service.js';
+import { PostWhereInput } from '../prisma/generated/models/Post.js';
+import { PostCommentCreateDto } from './dto/create-post-comment.dto.js';
+import { PostCommentDto } from './entities/post-comment.js';
+import { KeywordDataDto } from './entities/keyword-data.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+
+// Reusable select shape for both get and list
+const POST_SELECT = {
+  id: true,
+  description: true,
+  image: true,
+  createdAt: true,
+  keywords: {
+    select: { value: true },
+  },
+  mentions: {
+    select: {
+      id: true,
+      username: true,
+      profilePicture: true,
+    },
+  },
+  reactions: {
+    select: {
+      id: true,
+      username: true,
+      profilePicture: true,
+    },
+  },
+  comments: {
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      user: {
+        select: {
+          id: true,
+          username: true,
+          profilePicture: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' as const },
+  },
+  user: {
+    select: {
+      id: true,
+      username: true,
+      profilePicture: true,
+    },
+  },
+} as const;
+
+function mapPostData(
+  post: Prisma.PostGetPayload<{ select: typeof POST_SELECT }>,
+  currentUserId?: string,
+) {
+  return {
+    ...post,
+    likedByMe: currentUserId
+      ? post.reactions.some((reaction) => reaction.id === currentUserId)
+      : false,
+    createdAt: post.createdAt.toISOString(),
+    comments: post.comments.map((c) => ({
+      ...c,
+      createdAt: c.createdAt.toISOString(),
+    })),
+  };
+}
 
 @Injectable()
 export class PostsService {
@@ -30,172 +100,105 @@ export class PostsService {
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
     private readonly staticService: StaticService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
-  async get(id: UUID) {
-    const post = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
+  // ─── Keywords ────────────────────────────────────────────────────────────────
+
+  async listKeywords(): Promise<KeywordDataDto[]> {
+    const keywords = await this.prismaService.postKeyword.findMany({
       select: {
-        id: true,
-        description: true,
-        keywords: true,
-        mentions: true,
-        image: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profilePicture: true,
-          },
+        value: true,
+        _count: {
+          select: { posts: true },
         },
       },
+      orderBy: {
+        posts: { _count: 'desc' },
+      },
+    });
+
+    return keywords.map((k) => ({
+      value: k.value,
+      count: k._count.posts,
+    }));
+  }
+
+  // ─── Posts ───────────────────────────────────────────────────────────────────
+
+  async get(id: UUID, currentUserId?: string) {
+    const post = await this.prismaService.post.findUnique({
+      where: { id },
+      select: POST_SELECT,
     });
 
     if (null === post) {
       throw new NotFoundException();
     }
 
-    const mentions = (
-      await Promise.all(
-        post.mentions.map(
-          async (mention) =>
-            await this.prismaService.user.findUnique({
-              where: { id: mention },
-              select: { id: true, username: true },
-            }),
-        ),
-      )
-    ).filter((mention) => null !== mention);
-
-    return {
-      id: post.id,
-      description: post.description,
-      keywords: post.keywords,
-      mentions: mentions,
-      image: post.image,
-      createdAt: post.createdAt.toISOString(),
-      user: {
-        id: post.user.id,
-        username: post.user.username,
-        profilePicture: post.user.profilePicture,
-      },
-    };
+    return mapPostData(post, currentUserId);
   }
 
-  async list(query: GetPostsQuery, fromUserID?: UUID): Promise<PostDataList> {
-    const posts = await this.prismaService.post.findMany({
-      where: {
-        ...(fromUserID ? { user: { id: fromUserID } } : {}),
-        ...(query.description
-          ? {
-              description: { contains: query.description, mode: 'insensitive' },
-            }
-          : {}),
-        ...(query.keywords
-          ? {
-              keywords: {
-                hasEvery: query.keywords.split(',').map((k) => k.trim()),
-              },
-            }
-          : {}),
-      },
-      select: {
-        id: true,
-        description: true,
-        keywords: true,
-        mentions: true,
-        image: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profilePicture: true,
-          },
-        },
-      },
-      skip: query.skip,
-      take: query.limit,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const total = await this.prismaService.post.count({
-      where: {
-        ...(fromUserID ? { user: { id: fromUserID } } : {}),
-        ...(query.description
-          ? {
-              description: { contains: query.description, mode: 'insensitive' },
-            }
-          : {}),
-        ...(query.keywords
-          ? {
-              keywords: {
-                hasEvery: query.keywords.split(',').map((k) => k.trim()),
-              },
-            }
-          : {}),
-      },
-    });
-
-    const refinedPosts = await Promise.all(
-      posts.map(async (p) => ({
-        id: p.id,
-        description: p.description,
-        keywords: p.keywords,
-        mentions: (
-          await Promise.all(
-            p.mentions.map(
-              async (mention) =>
-                await this.prismaService.user.findUnique({
-                  where: { id: mention },
-                  select: { id: true, username: true },
-                }),
-            ),
-          )
-        ).filter((mention) => null !== mention),
-        image: p.image,
-        createdAt: p.createdAt.toISOString(),
-        user: {
-          id: p.user.id,
-          username: p.user.username,
-          profilePicture: p.user.profilePicture,
-        },
-      })),
-    );
-
-    return {
-      posts: refinedPosts,
-      total: total,
-    };
-  }
-
-  async listUserPosts(
-    userId: UUID,
+  async list(
     query: GetPostsQuery,
+    fromUserID?: string,
+    currentUserId?: string,
   ): Promise<PostDataList> {
-    return await this.list(query, userId);
+    const where: PostWhereInput = {
+      ...(fromUserID ? { user: { id: fromUserID } } : {}),
+      ...(query.description
+        ? { description: { contains: query.description, mode: 'insensitive' } }
+        : {}),
+      ...(query.keywords
+        ? {
+            AND: query.keywords.split(',').map((keyword) => ({
+              keywords: {
+                some: {
+                  value: { contains: keyword.trim(), mode: 'insensitive' },
+                },
+              },
+            })),
+          }
+        : {}),
+    };
+
+    const [posts, total] = await this.prismaService.$transaction([
+      this.prismaService.post.findMany({
+        where,
+        select: POST_SELECT,
+        skip: query.skip,
+        take: query.limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prismaService.post.count({ where }),
+    ]);
+
+    return {
+      posts: posts.map((p) => mapPostData(p, currentUserId)),
+      total,
+    };
   }
 
   async create(
     token: UserTokenDataDto,
     dto: PostCreateDto,
   ): Promise<CreatedPostDto> {
-    const post = await this.prismaService.post.create({
+    return this.prismaService.post.create({
       data: {
         user: { connect: { id: token.id } },
         description: dto.description,
-        keywords: dto.keywords,
-        mentions: dto.mentions,
+        keywords: {
+          connectOrCreate: dto.keywords.map((value) => ({
+            where: { value },
+            create: { value },
+          })),
+        },
+        mentions: {
+          connect: dto.mentions.map((id) => ({ id })),
+        },
       },
-      select: {
-        id: true,
-      },
+      select: { id: true },
     });
-
-    return post;
   }
 
   async uploadImage(
@@ -236,16 +239,16 @@ export class PostsService {
     });
     const uploadStream = file.file.pipe(sizeValidator);
 
-    await this.s3Service.createBucket('images');
-
-    const filename = path.join(postId, file.filename);
+    const sanitizedFilename = S3Service.sanitizeFilename(file.filename);
+    const key = path.join('images', postId, sanitizedFilename);
     await this.s3Service.pushMultipart(
-      'images',
-      filename,
+      this.staticService.getBucket(),
+      key,
       uploadStream,
       file.mimetype,
     );
-    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/images/${filename}`;
+
+    const staticImageUrl = `${this.staticService.getStaticOrigin()}/static/${key}`;
 
     await this.prismaService.post.update({
       where: {
@@ -265,17 +268,8 @@ export class PostsService {
     body: PostUpdateDto,
   ): Promise<void> {
     const post = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        description: true,
-        keywords: true,
-        mentions: true,
-        user: {
-          select: { id: true },
-        },
-      },
+      where: { id },
+      select: { user: { select: { id: true } } },
     });
 
     if (null === post) {
@@ -287,63 +281,165 @@ export class PostsService {
     }
 
     await this.prismaService.post.update({
-      where: {
-        id: id,
-        user: {
-          id: token.id,
-        },
-      },
+      where: { id, user: { id: token.id } },
       data: {
-        description: body.description ?? post.description,
-        keywords: body.keywords ?? post.keywords,
-        mentions: body.mentions ?? post.mentions,
+        ...(body.description ? { description: body.description } : {}),
+        ...(body.keywords
+          ? {
+              keywords: {
+                set: [],
+                connectOrCreate: body.keywords.map((value) => ({
+                  where: { value },
+                  create: { value },
+                })),
+              },
+            }
+          : {}),
+        ...(body.mentions
+          ? {
+              mentions: {
+                set: body.mentions.map((id) => ({ id })),
+              },
+            }
+          : {}),
       },
     });
   }
 
   async delete(token: UserTokenData, id: UUID): Promise<void> {
-    const postAuthor = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
+    const post = await this.prismaService.post.findUnique({
+      where: { id },
       select: {
-        user: {
-          select: { id: true },
-        },
+        image: true,
+        user: { select: { id: true } },
       },
     });
 
-    if (null === postAuthor) {
+    if (null === post) {
       throw new NotFoundException();
     }
 
-    if (token.id !== postAuthor.user.id) {
+    if (token.id !== post.user.id) {
       throw new ForbiddenException();
     }
 
-    // Delete the image from S3 if it exists
-    const post = await this.prismaService.post.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        image: true,
-      },
-    });
-
-    if (post?.image) {
+    if (post.image) {
       const url = new URL(post.image);
-      const imageKey = url.pathname.substring('/static/images/'.length);
-      await this.s3Service.delete('images', imageKey);
+      const imageKey = url.pathname.substring('/static/'.length);
+      await this.s3Service.delete(this.staticService.getBucket(), imageKey);
     }
 
     await this.prismaService.post.delete({
-      where: {
-        id: id,
-        user: {
-          id: token.id,
+      where: { id, user: { id: token.id } },
+    });
+  }
+
+  // ─── Reactions ───────────────────────────────────────────────────────────────
+
+  async toggleReaction(token: UserTokenData, postId: UUID): Promise<void> {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
+      select: {
+        userId: true,
+        reactions: { where: { id: token.id }, select: { id: true } },
+      },
+    });
+
+    if (null === post) throw new NotFoundException();
+
+    const alreadyLiked = post.reactions.length > 0;
+
+    await this.prismaService.post.update({
+      where: { id: postId },
+      data: {
+        reactions: {
+          [alreadyLiked ? 'disconnect' : 'connect']: { id: token.id },
         },
       },
     });
+
+    await this.notificationsService.create(
+      alreadyLiked
+        ? NotificationType.POST_UNLIKED
+        : NotificationType.POST_LIKED,
+      token.id,
+      post.userId,
+      postId,
+    );
+  }
+
+  // ─── Comments ────────────────────────────────────────────────────────────────
+
+  async createComment(
+    token: UserTokenData,
+    postId: UUID,
+    dto: PostCommentCreateDto,
+  ): Promise<PostCommentDto> {
+    const post = await this.prismaService.post.findUnique({
+      where: { id: postId },
+      select: { userId: true, id: true },
+    });
+
+    if (null === post) throw new NotFoundException();
+
+    const comment = await this.prismaService.postComment.create({
+      data: {
+        content: dto.content,
+        post: { connect: { id: postId } },
+        user: { connect: { id: token.id } },
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profilePicture: true,
+          },
+        },
+      },
+    });
+
+    await this.notificationsService.create(
+      NotificationType.POST_COMMENTED,
+      token.id,
+      post.userId,
+      postId,
+    );
+
+    return { ...comment, createdAt: comment.createdAt.toISOString() };
+  }
+
+  async deleteComment(
+    token: UserTokenData,
+    postId: UUID,
+    commentId: UUID,
+  ): Promise<void> {
+    const comment = await this.prismaService.postComment.findUnique({
+      where: { id: commentId },
+      select: {
+        postId: true,
+        user: { select: { id: true } },
+        post: { select: { userId: true } },
+      },
+    });
+
+    if (null === comment || comment.postId !== postId) {
+      throw new NotFoundException();
+    }
+
+    if (token.id !== comment.user.id) {
+      throw new ForbiddenException();
+    }
+
+    await this.notificationsService.create(
+      NotificationType.POST_COMMENT_DELETED,
+      token.id,
+      comment.post.userId,
+      postId,
+    );
+    await this.prismaService.postComment.delete({ where: { id: commentId } });
   }
 }
