@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { Prisma } from '../prisma/generated/client.js';
+import { NotificationType, Prisma } from '../prisma/generated/client.js';
 import { S3Service } from '../s3/s3.service.js';
 import { BadRequestException } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
@@ -28,6 +28,7 @@ import { PostWhereInput } from '../prisma/generated/models/Post.js';
 import { PostCommentCreateDto } from './dto/create-post-comment.dto.js';
 import { PostCommentDto } from './entities/post-comment.js';
 import { KeywordDataDto } from './entities/keyword-data.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 // Reusable select shape for both get and list
 const POST_SELECT = {
@@ -99,6 +100,7 @@ export class PostsService {
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
     private readonly staticService: StaticService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // ─── Keywords ────────────────────────────────────────────────────────────────
@@ -338,6 +340,7 @@ export class PostsService {
     const post = await this.prismaService.post.findUnique({
       where: { id: postId },
       select: {
+        userId: true,
         reactions: { where: { id: token.id }, select: { id: true } },
       },
     });
@@ -354,6 +357,15 @@ export class PostsService {
         },
       },
     });
+
+    await this.notificationsService.create(
+      alreadyLiked
+        ? NotificationType.POST_UNLIKED
+        : NotificationType.POST_LIKED,
+      token.id,
+      post.userId,
+      postId,
+    );
   }
 
   // ─── Comments ────────────────────────────────────────────────────────────────
@@ -365,7 +377,7 @@ export class PostsService {
   ): Promise<PostCommentDto> {
     const post = await this.prismaService.post.findUnique({
       where: { id: postId },
-      select: { id: true },
+      select: { userId: true, id: true },
     });
 
     if (null === post) throw new NotFoundException();
@@ -390,6 +402,13 @@ export class PostsService {
       },
     });
 
+    await this.notificationsService.create(
+      NotificationType.POST_COMMENTED,
+      token.id,
+      post.userId,
+      postId,
+    );
+
     return { ...comment, createdAt: comment.createdAt.toISOString() };
   }
 
@@ -403,6 +422,7 @@ export class PostsService {
       select: {
         postId: true,
         user: { select: { id: true } },
+        post: { select: { userId: true } },
       },
     });
 
@@ -414,6 +434,12 @@ export class PostsService {
       throw new ForbiddenException();
     }
 
+    await this.notificationsService.create(
+      NotificationType.POST_COMMENT_DELETED,
+      token.id,
+      comment.post.userId,
+      postId,
+    );
     await this.prismaService.postComment.delete({ where: { id: commentId } });
   }
 }

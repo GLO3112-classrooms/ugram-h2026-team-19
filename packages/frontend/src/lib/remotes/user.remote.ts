@@ -1,9 +1,11 @@
+import { resolve } from "$app/paths";
 import { command, form, getRequestEvent, query } from "$app/server";
 import { apiFetch } from "$lib/server/api";
 import { error, redirect } from "@sveltejs/kit";
 import {
   userAvatarUploadSchema,
   userUpdateDataSchema,
+  type NotificationsList,
   type UserData,
   type UserDataListSchema
 } from "backend/schemas";
@@ -142,5 +144,23 @@ export const postAvatar = form(userAvatarUploadSchema, async ({ avatar }) => {
       return redirect(303, "/signin");
     default:
       return error(500, await response.text());
+  }
+});
+
+export const getNotifications = query(async (): Promise<NotificationsList> => {
+  const token = getRequestEvent().cookies.get("token");
+
+  const response = await apiFetch("/users/me/notifications", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  switch (response.status) {
+    case 200:
+      return await response.json();
+    case 401:
+      return redirect(303, resolve("/signin"));
+
+    default:
+      return error(500, "Something went wrong");
   }
 });
