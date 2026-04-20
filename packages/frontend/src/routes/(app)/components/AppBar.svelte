@@ -7,9 +7,25 @@
   import * as Drawer from "$lib/shadcn/drawer/index.js";
   import * as Empty from "$lib/shadcn/empty/index.js";
   import * as Item from "$lib/shadcn/item/index.js";
-  import { BellIcon, BellOffIcon, HeartIcon, MessageCircleIcon } from "@lucide/svelte";
+  import {
+    BellIcon,
+    BellOffIcon,
+    HeartIcon,
+    HeartOffIcon,
+    Icon,
+    MessageCircleIcon,
+    MessageCircleOffIcon
+  } from "@lucide/svelte";
+  import type { Notification } from "backend/schemas";
 
   const isMobile = new IsMobile();
+
+  const types: Record<Notification["type"], { icon: typeof Icon; title: string }> = {
+    POST_COMMENTED: { title: "commented on your post", icon: MessageCircleIcon },
+    POST_COMMENT_DELETED: { title: "deleted a comment on your post", icon: MessageCircleOffIcon },
+    POST_LIKED: { title: "liked your post", icon: HeartIcon },
+    POST_UNLIKED: { title: "unliked your post", icon: HeartOffIcon }
+  };
 </script>
 
 <div class="flex justify-between">
@@ -27,19 +43,16 @@
       </Drawer.Header>
 
       <div class="flex flex-col gap-2 p-4">
-        {#each await getNotifications() as { description, postId, createdAt }, index (index)}
+        {#each await getNotifications() as { actor, type, post, createdAt }, index (index)}
           <Item.Root>
             {#snippet child({ props })}
-              <a href={resolve(`/post/${postId}`)} {...props}>
+              {@const Icon = types[type]["icon"]}
+              <a href={resolve(`/post/${post?.id}`)} {...props}>
                 <Item.Media>
-                  {#if description.includes("commented")}
-                    <MessageCircleIcon />
-                  {:else}
-                    <HeartIcon />
-                  {/if}
+                  <Icon />
                 </Item.Media>
                 <Item.Content>
-                  <Item.Title class="font-bold">{description}</Item.Title>
+                  <Item.Title class="font-bold">{actor.username} {types[type]["title"]}</Item.Title>
                   <Item.Description class="text-xs">
                     {new Date(createdAt).toLocaleString()}
                   </Item.Description>
